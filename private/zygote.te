@@ -17,6 +17,7 @@ allow zygote self:process setcurrent;
 allow zygote system_server_startup:process dyntransition;
 allow zygote appdomain:process dyntransition;
 allow zygote webview_zygote:process dyntransition;
+allow zygote app_zygote:process dyntransition;
 
 # Allow zygote to read app /proc/pid dirs (b/10455872).
 allow zygote appdomain:dir { getattr search };
@@ -26,6 +27,7 @@ allow zygote appdomain:file { r_file_perms };
 allow zygote system_server:process { getpgid setpgid };
 allow zygote appdomain:process { getpgid setpgid };
 allow zygote webview_zygote:process { getpgid setpgid };
+allow zygote app_zygote:process { getpgid setpgid };
 
 # Read system data.
 allow zygote system_data_file:dir r_dir_perms;
@@ -91,10 +93,14 @@ allow zygote sdcardfs:filesystem { unmount };
 # Allow creating user-specific storage source if started before vold.
 allow zygote mnt_user_file:dir create_dir_perms;
 allow zygote mnt_user_file:lnk_file create_file_perms;
+allow zygote mnt_user_file:file create_file_perms;
 # Allowed to mount user-specific storage into place
 allow zygote storage_file:dir { search mounton };
 # Allow mounting on sdcardfs dirs
-allow zygote sdcardfs:dir { search mounton };
+# TODO: reduce this back to only sdcardfs once b/123533205 is root-caused
+# (Technically "sdcardfs" and "media_rw_data_file" are equivalent, since
+# sdcardfs simply wraps files stored under /data/media.)
+allow zygote { sdcardfs media_rw_data_file }:dir { search mounton };
 
 # Handle --invoke-with command when launching Zygote with a wrapper command.
 allow zygote zygote_exec:file rx_file_perms;
@@ -123,6 +129,10 @@ allow zygote same_process_hal_file:file { execute read open getattr map };
 get_prop(zygote, overlay_prop)
 get_prop(zygote, exported_overlay_prop)
 
+# Allow the zygote to access the runtime feature flag properties.
+get_prop(zygote, device_config_runtime_native_prop)
+get_prop(zygote, device_config_runtime_native_boot_prop)
+
 # ingore spurious denials
 dontaudit zygote self:global_capability_class_set sys_resource;
 
@@ -135,11 +145,13 @@ dontaudit zygote self:global_capability_class_set sys_resource;
 # written on appdomain are applied to all app processes.
 # This is achieved by ensuring that it is impossible for zygote to
 # setcon (dyntransition) to any types other than those associated
-# with appdomain plus system_server_startup and webview_zygote.
+# with appdomain plus system_server_startup, webview_zygote and
+# app_zygote.
 neverallow zygote ~{
   appdomain
   system_server_startup
   webview_zygote
+  app_zygote
 }:process dyntransition;
 
 # Zygote should never execute anything from /data except for /data/dalvik-cache files.

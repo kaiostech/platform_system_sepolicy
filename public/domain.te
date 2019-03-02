@@ -52,6 +52,7 @@ userdebug_or_eng(`
 ')
 
 # Root fs.
+allow domain tmpfs:dir { getattr search };
 allow domain rootfs:dir search;
 allow domain rootfs:lnk_file { read getattr };
 
@@ -75,44 +76,12 @@ allow {
 not_full_treble(`allow { domain -hwservicemanager -vndservicemanager } binder_device:chr_file rw_file_perms;')
 allow { domain -servicemanager -vndservicemanager -isolated_app } hwbinder_device:chr_file rw_file_perms;
 allow domain ptmx_device:chr_file rw_file_perms;
-allow domain alarm_device:chr_file r_file_perms;
 allow domain random_device:chr_file rw_file_perms;
 allow domain proc_random:dir r_dir_perms;
 allow domain proc_random:file r_file_perms;
 allow domain properties_device:dir { search getattr };
 allow domain properties_serial:file r_file_perms;
 allow domain property_info:file r_file_perms;
-
-# For now, everyone can access core property files
-# Device specific properties are not granted by default
-not_compatible_property(`
-    get_prop(domain, core_property_type)
-    get_prop(domain, exported_dalvik_prop)
-    get_prop(domain, exported_ffs_prop)
-    get_prop(domain, exported_system_radio_prop)
-    get_prop(domain, exported2_config_prop)
-    get_prop(domain, exported2_radio_prop)
-    get_prop(domain, exported2_system_prop)
-    get_prop(domain, exported2_vold_prop)
-    get_prop(domain, exported3_default_prop)
-    get_prop(domain, exported3_radio_prop)
-    get_prop(domain, exported3_system_prop)
-    get_prop(domain, vendor_default_prop)
-')
-compatible_property_only(`
-    get_prop({coredomain appdomain shell}, core_property_type)
-    get_prop({coredomain appdomain shell}, exported_dalvik_prop)
-    get_prop({coredomain appdomain shell}, exported_ffs_prop)
-    get_prop({coredomain appdomain shell}, exported_system_radio_prop)
-    get_prop({coredomain appdomain shell}, exported2_config_prop)
-    get_prop({coredomain appdomain shell}, exported2_radio_prop)
-    get_prop({coredomain appdomain shell}, exported2_system_prop)
-    get_prop({coredomain appdomain shell}, exported2_vold_prop)
-    get_prop({coredomain appdomain shell}, exported3_default_prop)
-    get_prop({coredomain appdomain shell}, exported3_radio_prop)
-    get_prop({coredomain appdomain shell}, exported3_system_prop)
-    get_prop({domain -coredomain -appdomain}, vendor_default_prop)
-')
 
 # Public readable properties
 get_prop(domain, debug_prop)
@@ -156,6 +125,11 @@ allow domain system_security_cacerts_file:file r_file_perms;
 allow domain system_linker_exec:file { execute read open getattr map };
 allow domain system_linker_config_file:file r_file_perms;
 allow domain system_lib_file:file { execute read open getattr map };
+# To allow following symlinks at /system/bin/linker, /system/lib/libc.so, etc.
+allow domain system_linker_exec:lnk_file { read open getattr };
+allow domain system_lib_file:lnk_file { read open getattr };
+
+allow domain system_event_log_tags_file:file r_file_perms;
 
 allow { appdomain coredomain } system_file:file { execute read open getattr map };
 
@@ -236,6 +210,9 @@ allow domain proc:lnk_file { getattr read };
 # /proc/cpuinfo
 allow domain proc_cpuinfo:file r_file_perms;
 
+# /dev/cpu_variant:.*
+allow domain dev_cpu_variant:file r_file_perms;
+
 # jemalloc needs to read /proc/sys/vm/overcommit_memory
 allow domain proc_overcommit_memory:file r_file_perms;
 
@@ -247,11 +224,6 @@ allow domain selinuxfs:dir search;
 allow domain selinuxfs:file getattr;
 allow domain sysfs:dir search;
 allow domain selinuxfs:filesystem getattr;
-
-# Path resolution access in cgroups.
-allow domain cgroup:dir search;
-allow { domain -appdomain } cgroup:dir w_dir_perms;
-allow { domain -appdomain } cgroup:file w_file_perms;
 
 # Almost all processes log tracing information to
 # /sys/kernel/debug/tracing/trace_marker
@@ -421,6 +393,11 @@ neverallow {
 # Ensure that all entrypoint executables are in exec_type or postinstall_file.
 neverallow * { file_type -exec_type -postinstall_file }:file entrypoint;
 
+# The dynamic linker always calls access(2) on the path. Don't generate SElinux
+# denials since the linker does not actually access the path in case the path
+# does not exist or isn't accessible for the process.
+dontaudit domain postinstall_mnt_dir:dir audit_access;
+
 #Ensure that nothing in userspace can access /dev/port
 neverallow {
   domain
@@ -500,21 +477,17 @@ neverallow { domain -init } properties_serial:file { no_w_file_perms no_x_file_p
 # These partitions are intended to be read-only and must never be
 # modified. Doing so would violate important Android security guarantees
 # and invalidate dm-verity signatures.
-# NOTE: Previously removed by diegowilson@ with b/117832268. Fixed in 8.3 which
-# we are currently updating. Commenting this out for future reference.
-#neverallow {
-#    domain
-#    with_asan(`-asan_extract')
-#    recovery_only(`userdebug_or_eng(`-fastbootd')')
-#} {
-#    system_file_type
-#    vendor_file_type
-#    exec_type
-#}:dir_file_class_set { create write setattr relabelfrom append unlink link rename };
+neverallow {
+    domain
+    with_asan(`-asan_extract')
+    recovery_only(`userdebug_or_eng(`-fastbootd')')
+} {
+    system_file_type
+    vendor_file_type
+    exec_type
+}:dir_file_class_set { create write setattr relabelfrom append unlink link rename };
 
-# NOTE: Previously removed by diegowilson@ with b/117832268. Fixed in 8.3 which
-# we are currently updating. Commenting this out for future reference.
-# neverallow { domain -kernel with_asan(`-asan_extract') } { system_file_type vendor_file_type exec_type }:dir_file_class_set relabelto;
+neverallow { domain -kernel with_asan(`-asan_extract') } { system_file_type vendor_file_type exec_type }:dir_file_class_set relabelto;
 
 # Don't allow mounting on top of /system files or directories
 neverallow * exec_type:dir_file_class_set mounton;
@@ -777,6 +750,7 @@ full_treble_only(`
     userdebug_or_eng(`-su') # communications with su are permitted only on userdebug or eng builds
     -init
     -tombstoned # TODO(b/36604251): Remove tombstoned from this list once mediacodec (OMX HAL) no longer declares Binder services
+    userdebug_or_eng('-heapprofd`)
   });
 ')
 
@@ -966,69 +940,6 @@ full_treble_only(`
     }:file_class_set ~{ append getattr ioctl read write map };
 ')
 
-# On TREBLE devices, a limited set of files in /vendor are accessible to
-# only a few whitelisted coredomains to keep system/vendor separation.
-full_treble_only(`
-    # Limit access to /vendor/app
-    neverallow {
-        coredomain
-        -appdomain
-        -dex2oat
-        -idmap
-        -init
-        -installd
-        userdebug_or_eng(`-perfprofd')
-        userdebug_or_eng(`-heapprofd')
-        -postinstall_dexopt
-        -system_server
-    } vendor_app_file:dir { open read getattr search };
-')
-
-full_treble_only(`
-    neverallow {
-        coredomain
-        -appdomain
-        -dex2oat
-        -idmap
-        -init
-        -installd
-        userdebug_or_eng(`-perfprofd')
-        userdebug_or_eng(`-heapprofd')
-        -postinstall_dexopt
-        -system_server
-        -mediaserver
-    } vendor_app_file:file r_file_perms;
-')
-
-full_treble_only(`
-    # Limit access to /vendor/overlay
-    neverallow {
-        coredomain
-        -appdomain
-        -idmap
-        -init
-        -installd
-        -system_server
-        -webview_zygote
-        -zygote
-        userdebug_or_eng(`-heapprofd')
-    } vendor_overlay_file:dir { getattr open read search };
-')
-
-full_treble_only(`
-    neverallow {
-        coredomain
-        -appdomain
-        -idmap
-        -init
-        -installd
-        -system_server
-        -webview_zygote
-        -zygote
-        userdebug_or_eng(`-heapprofd')
-    } vendor_overlay_file:file r_file_perms;
-')
-
 full_treble_only(`
     # Non-vendor domains are not allowed to file execute shell
     # from vendor
@@ -1133,6 +1044,7 @@ full_treble_only(`
     -file_contexts_file
     -netutils_wrapper_exec
     -property_contexts_file
+    -system_event_log_tags_file
     -system_lib_file
     with_asan(`-system_asan_options_file')
     -system_linker_exec
@@ -1140,6 +1052,7 @@ full_treble_only(`
     -system_seccomp_policy_file
     -system_security_cacerts_file
     -system_zoneinfo_file
+    -task_profiles_file
     userdebug_or_eng(`-tcpdump_exec')
   }:file *;
 ')
@@ -1171,8 +1084,9 @@ neverallow {
 neverallow { domain -zygote -system_server } zygote:unix_stream_socket connectto;
 neverallow { domain -system_server } zygote_socket:sock_file write;
 
-neverallow { domain -system_server -webview_zygote } webview_zygote:unix_stream_socket connectto;
+neverallow { domain -system_server -webview_zygote -app_zygote } webview_zygote:unix_stream_socket connectto;
 neverallow { domain -system_server } webview_zygote:sock_file write;
+neverallow { domain -system_server } app_zygote:sock_file write;
 
 neverallow {
   domain
@@ -1302,8 +1216,9 @@ neverallow {
   -zygote
 } shell:process { transition dyntransition };
 
-# Only domains spawned from zygote and runas may have the appdomain attribute.
-neverallow { domain -runas -webview_zygote -zygote } {
+# Only domains spawned from zygote, runas and simpleperf_app_runner may have the appdomain
+# attribute.
+neverallow { domain -simpleperf_app_runner -runas -app_zygote -webview_zygote -zygote } {
   appdomain -shell userdebug_or_eng(`-su')
 }:process { transition dyntransition };
 
@@ -1343,6 +1258,7 @@ neverallow {
   -dumpstate
   -init
   -installd
+  -simpleperf_app_runner
   -system_server # why?
   userdebug_or_eng(`-uncrypt')
 } shell_data_file:dir { open search };
@@ -1455,6 +1371,7 @@ define(`dac_override_allowed', `{
   perfprofd
   postinstall_dexopt
   recovery
+  rss_hwm_reset
   sdcardd
   tee
   ueventd

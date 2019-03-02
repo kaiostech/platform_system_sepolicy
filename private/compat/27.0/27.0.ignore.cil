@@ -16,6 +16,7 @@
     apexd_exec
     apexd_prop
     apexd_tmpfs
+    app_zygote
     atrace
     binder_calls_stats_service
     biometric_service
@@ -28,6 +29,7 @@
     bpfloader_exec
     cgroup_bpf
     color_display_service
+    content_capture_service
     crossprofileapps_service
     ctl_interface_restart_prop
     ctl_interface_start_prop
@@ -35,6 +37,7 @@
     ctl_sigstop_prop
     device_config_boot_count_prop
     device_config_reset_performed_prop
+    device_config_netd_native_prop
     exfat
     exported2_config_prop
     exported2_default_prop
@@ -86,12 +89,12 @@
     heapprofd_socket
     incident_helper
     incident_helper_exec
-    intelligence_service
     iorapd
     iorapd_data_file
     iorapd_exec
     iorapd_service
     iorapd_tmpfs
+    ipmemorystore_service
     last_boot_reason_prop
     llkd
     llkd_exec
@@ -108,6 +111,8 @@
     metadata_file
     mnt_product_file
     mnt_vendor_file
+    network_stack
+    network_stack_service
     network_watchlist_data_file
     network_watchlist_service
     overlayfs_file
@@ -119,11 +124,15 @@
     property_info
     recovery_socket
     role_service
+    runas_app
+    runtime_service
     secure_element
     secure_element_device
     secure_element_service
     secure_element_tmpfs
     server_configurable_flags_data_file
+    simpleperf_app_runner
+    simpleperf_app_runner_exec
     slice_service
     stats
     stats_data_file
@@ -137,6 +146,7 @@
     statsdw_socket
     storaged_data_file
     super_block_device
+    staging_data_file
     system_boot_reason_prop
     system_lmk_prop
     system_suspend_hwservice

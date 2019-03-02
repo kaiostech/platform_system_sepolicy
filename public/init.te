@@ -1,8 +1,7 @@
 # init is its own domain.
 type init, domain, mlstrustedsubject;
-
-# The init domain is entered by execing init.
 type init_exec, system_file_type, exec_type, file_type;
+type init_tmpfs, file_type;
 
 # /dev/__null__ node created by init.
 allow init tmpfs:chr_file { create setattr unlink rw_file_perms };
@@ -40,9 +39,11 @@ allow init kernel:fd use;
 # restorecon for early mount device symlinks
 allow init tmpfs:lnk_file { getattr read relabelfrom };
 allow init {
+  metadata_block_device
   misc_block_device
   recovery_block_device
   system_block_device
+  userdata_block_device
 }:{ blk_file lnk_file } relabelto;
 
 # setrlimit
@@ -69,6 +70,9 @@ allow init tty_device:chr_file rw_file_perms;
 # Call mount(2).
 allow init self:global_capability_class_set sys_admin;
 
+# Call setns(2).
+allow init self:global_capability_class_set sys_chroot;
+
 # Create and mount on directories in /.
 allow init rootfs:dir create_dir_perms;
 allow init { rootfs cache_file cgroup storage_file system_data_file system_file vendor_file postinstall_mnt_dir }:dir mounton;
@@ -83,6 +87,15 @@ allow init device:dir mounton;
 # Mount tmpfs on /apex
 allow init apex_mnt_dir:dir mounton;
 
+# Mount Bionic libraries and dynamic linkers
+allow init system_lib_file:file mounton;
+allow init system_linker_exec:file mounton;
+# The mount points under /bionic are rootfs in recovery mode. Init should
+# be able to bind-mount the bootstrap Bionic to the mount points.
+recovery_only(`
+  allow init rootfs:file mounton;
+')
+
 # Create and remove symlinks in /.
 allow init rootfs:lnk_file { create unlink };
 
@@ -94,6 +107,8 @@ allow init tmpfs:dir create_dir_perms;
 allow init tmpfs:dir mounton;
 allow init cgroup:dir create_dir_perms;
 allow init cgroup:file rw_file_perms;
+allow init cgroup_rc_file:file rw_file_perms;
+allow init cgroup_desc_file:file r_file_perms;
 
 # /config
 allow init configfs:dir mounton;
@@ -257,7 +272,6 @@ allow init {
 allow init { fs_type -contextmount_type -sdcard_type -rootfs }:dir  { open read setattr search };
 
 allow init {
-  alarm_device
   ashmem_device
   binder_device
   console_device
@@ -301,6 +315,7 @@ userdebug_or_eng(`
 ')
 
 allow init {
+  proc # b/67049235 processes /proc/<pid>/* files are mislabeled.
   proc_cmdline
   proc_diskstats
   proc_kmsg # Open /proc/kmsg for logd service.
@@ -352,11 +367,23 @@ allow init {
 
 allow init {
   sysfs_dt_firmware_android
+  sysfs_fs_ext4_features
 }:file r_file_perms;
 
 allow init {
   sysfs_zram
 }:file rw_file_perms;
+
+# allow init to create loop devices with /dev/loop-control
+allow init loop_control_device:chr_file rw_file_perms;
+allow init loop_device:blk_file rw_file_perms;
+allowxperm init loop_device:blk_file ioctl {
+  LOOP_SET_FD
+  LOOP_CLR_FD
+  LOOP_CTL_GET_FREE
+  LOOP_SET_BLOCK_SIZE
+  LOOP_SET_DIRECT_IO
+};
 
 # Allow init to write to vibrator/trigger
 allow init sysfs_vibrator:file w_file_perms;
@@ -371,6 +398,7 @@ allow init {
   sysfs_power
   sysfs_vibrator
   sysfs_wake_lock
+  sysfs_zram
 }:file setattr;
 
 # Set usermodehelpers.

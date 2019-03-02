@@ -8,12 +8,6 @@ domain_auto_trans(dumpstate, vdc_exec, vdc)
 # Acquire advisory lock on /system/etc/xtables.lock from ip[6]tables
 allow dumpstate system_file:file lock;
 
-# systrace support - allow atrace to run
-allow dumpstate debugfs_tracing:dir r_dir_perms;
-allow dumpstate debugfs_tracing:file rw_file_perms;
-allow dumpstate debugfs_tracing_debug:dir r_dir_perms;
-allow dumpstate debugfs_trace_marker:file getattr;
-allow dumpstate atrace_exec:file rx_file_perms;
 allow dumpstate storaged_exec:file rx_file_perms;
 
 # /data/misc/wmtrace for wm traces
@@ -21,6 +15,9 @@ userdebug_or_eng(`
   allow dumpstate wm_trace_data_file:dir r_dir_perms;
   allow dumpstate wm_trace_data_file:file r_file_perms;
 ')
+
+# Allow dumpstate to make binder calls to incidentd
+binder_call(dumpstate, incidentd)
 
 # Allow dumpstate to make binder calls to storaged service
 binder_call(dumpstate, storaged)
@@ -30,6 +27,9 @@ binder_call(dumpstate, statsd)
 
 # Allow dumpstate to talk to gpuservice over binder
 binder_call(dumpstate, gpuservice);
+
+# Allow dumpstate to talk to idmap over binder
+binder_call(dumpstate, idmap);
 
 # Collect metrics on boot time created by init
 get_prop(dumpstate, boottime_prop)
@@ -46,3 +46,6 @@ allow dumpstate webview_zygote:process signal;
 dontaudit dumpstate perfprofd:binder call;
 dontaudit dumpstate update_engine:binder call;
 allow dumpstate proc_net_tcp_udp:file r_file_perms;
+
+# For comminucating with the system process to do confirmation ui.
+binder_call(dumpstate, incidentcompanion_service)

@@ -7,6 +7,8 @@ domain_trans(init, rootfs, charger)
 domain_trans(init, rootfs, healthd)
 domain_trans(init, rootfs, slideshow)
 domain_auto_trans(init, e2fs_exec, e2fs)
+domain_auto_trans(init, bpfloader_exec, bpfloader)
+
 recovery_only(`
   domain_trans(init, rootfs, adbd)
   domain_trans(init, rootfs, fastbootd)
@@ -25,3 +27,6 @@ userdebug_or_eng(`
   dontaudit init su:process noatsecure;
   allow init su:process { siginh rlimitinh };
 ')
+
+# Allow the BoringSSL self test to request a reboot upon failure
+set_prop(init, powerctl_prop)

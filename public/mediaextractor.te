@@ -1,6 +1,7 @@
 # mediaextractor - multimedia daemon
 type mediaextractor, domain;
 type mediaextractor_exec, system_file_type, exec_type, file_type;
+type mediaextractor_tmpfs, file_type;
 
 typeattribute mediaextractor mlstrustedsubject;
 
@@ -16,6 +17,7 @@ allow mediaextractor hidl_token_hwservice:hwservice_manager find;
 allow mediaextractor system_server:fd use;
 
 hal_client_domain(mediaextractor, hal_cas)
+hal_client_domain(mediaextractor, hal_allocator)
 
 r_dir_file(mediaextractor, cgroup)
 allow mediaextractor proc_meminfo:file r_file_perms;
@@ -34,6 +36,8 @@ allow mediaextractor ringtone_file:file { read getattr };
 
 # scan extractor library directory to dynamically load extractors
 allow mediaextractor system_file:dir { read open };
+
+get_prop(mediaextractor, device_config_media_native_prop)
 
 userdebug_or_eng(`
   # Allow extractor to add update service.

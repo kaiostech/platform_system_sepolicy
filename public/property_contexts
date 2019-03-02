@@ -6,6 +6,7 @@ af.fast_track_multiplier u:object_r:exported3_default_prop:s0 exact int
 audio.camerasound.force u:object_r:exported_audio_prop:s0 exact bool
 audio.deep_buffer.media u:object_r:exported3_default_prop:s0 exact bool
 audio.offload.video u:object_r:exported3_default_prop:s0 exact bool
+audio.offload.min.duration.secs u:object_r:exported3_default_prop:s0 exact int
 camera.disable_zsl_mode u:object_r:exported3_default_prop:s0 exact bool
 camera.fifo.disable u:object_r:exported3_default_prop:s0 exact int
 dalvik.vm.appimageformat u:object_r:exported_dalvik_prop:s0 exact string
@@ -97,6 +98,7 @@ ro.boot.vendor.overlay.theme u:object_r:exported_overlay_prop:s0 exact string
 ro.boot.wificountrycode u:object_r:exported3_default_prop:s0 exact string
 ro.bt.bdaddr_path u:object_r:exported_bluetooth_prop:s0 exact string
 ro.camera.notify_nfc u:object_r:exported3_default_prop:s0 exact int
+ro.camera.enableLazyHal u:object_r:exported3_default_prop:s0 exact bool
 ro.com.android.dataroaming u:object_r:exported3_default_prop:s0 exact bool
 ro.com.android.prov_mobiledata u:object_r:exported3_default_prop:s0 exact bool
 ro.config.alarm_alert u:object_r:exported2_config_prop:s0 exact string
@@ -111,6 +113,7 @@ ro.crypto.volume.filenames_mode u:object_r:exported2_vold_prop:s0 exact string
 ro.dalvik.vm.native.bridge u:object_r:exported_dalvik_prop:s0 exact string
 ro.enable_boot_charger_mode u:object_r:exported3_default_prop:s0 exact bool
 ro.gfx.driver.0 u:object_r:exported3_default_prop:s0 exact string
+ro.gfx.angle.supported u:object_r:exported3_default_prop:s0 exact bool
 ro.hdmi.device_type u:object_r:exported3_default_prop:s0 exact string
 ro.hdmi.wake_on_hotplug u:object_r:exported3_default_prop:s0 exact bool
 ro.lmk.critical_upgrade u:object_r:exported3_default_prop:s0 exact bool
@@ -135,6 +138,9 @@ ro.telephony.iwlan_operation_mode u:object_r:exported3_default_prop:s0 exact int
 ro.url.legal u:object_r:exported3_default_prop:s0 exact string
 ro.url.legal.android_privacy u:object_r:exported3_default_prop:s0 exact string
 ro.vendor.build.security_patch u:object_r:vendor_security_patch_level_prop:s0 exact string
+ro.zram.mark_idle_delay_mins u:object_r:exported3_default_prop:s0 exact int
+ro.zram.first_wb_delay_mins u:object_r:exported3_default_prop:s0 exact int
+ro.zram.periodic_wb_delay_hours u:object_r:exported3_default_prop:s0 exact int
 ro.zygote u:object_r:exported3_default_prop:s0 exact string
 sendbug.preferred.domain u:object_r:exported3_default_prop:s0 exact string
 sys.usb.controller u:object_r:exported2_system_prop:s0 exact string
@@ -187,6 +193,7 @@ libc.debug.malloc.program u:object_r:exported2_default_prop:s0 exact string
 libc.debug.hooks.enable u:object_r:exported2_default_prop:s0 exact string
 persist.sys.locale u:object_r:exported_system_prop:s0 exact string
 persist.sys.timezone u:object_r:exported_system_prop:s0 exact string
+persist.sys.test_harness u:object_r:test_harness_prop:s0 exact bool
 ro.adb.secure u:object_r:exported_secure_prop:s0 exact int
 ro.arch u:object_r:exported2_default_prop:s0 exact string
 ro.audio.ignore_effects u:object_r:exported2_default_prop:s0 exact bool
@@ -256,6 +263,10 @@ gsm.sim.operator.numeric u:object_r:exported_radio_prop:s0 exact string
 media.mediadrmservice.enable u:object_r:exported_default_prop:s0 exact bool
 persist.rcs.supported u:object_r:exported_default_prop:s0 exact int
 rcs.publish.status u:object_r:exported_radio_prop:s0 exact string
+ro.bionic.2nd_arch u:object_r:cpu_variant_prop:s0 exact string
+ro.bionic.2nd_cpu_variant u:object_r:cpu_variant_prop:s0 exact string
+ro.bionic.arch u:object_r:cpu_variant_prop:s0 exact string
+ro.bionic.cpu_variant u:object_r:cpu_variant_prop:s0 exact string
 ro.board.platform u:object_r:exported_default_prop:s0 exact string
 ro.boot.fake_battery u:object_r:exported_default_prop:s0 exact int
 ro.boot.hardware.revision u:object_r:exported_default_prop:s0 exact string
@@ -305,6 +316,7 @@ ro.hardware.vehicle u:object_r:exported_default_prop:s0 exact string
 ro.hardware.vibrator u:object_r:exported_default_prop:s0 exact string
 ro.hardware.virtual_device u:object_r:exported_default_prop:s0 exact string
 ro.hardware.vulkan u:object_r:exported_default_prop:s0 exact string
+ro.hwui.use_vulkan u:object_r:exported_default_prop:s0 exact bool
 ro.kernel.qemu u:object_r:exported_default_prop:s0 exact bool
 ro.kernel.qemu. u:object_r:exported_default_prop:s0
 ro.kernel.android.bootanim u:object_r:exported_default_prop:s0 exact int
@@ -341,3 +353,23 @@ ro.boot.revision u:object_r:exported2_default_prop:s0 exact string
 ro.bootmode u:object_r:exported2_default_prop:s0 exact string
 ro.build.type u:object_r:exported2_default_prop:s0 exact string
 sys.shutdown.requested u:object_r:exported_system_prop:s0 exact string
+
+# Using Sysprop as API. So the ro.surface_flinger.* are guaranteed to be API-stable
+ro.surface_flinger.default_composition_dataspace u:object_r:exported_default_prop:s0 int
+ro.surface_flinger.default_composition_pixel_format u:object_r:exported_default_prop:s0 int
+ro.surface_flinger.force_hwc_copy_for_virtual_displays u:object_r:exported_default_prop:s0 bool
+ro.surface_flinger.has_HDR_display u:object_r:exported_default_prop:s0 bool
+ro.surface_flinger.has_wide_color_display u:object_r:exported_default_prop:s0 bool
+ro.surface_flinger.max_frame_buffer_acquired_buffers u:object_r:exported_default_prop:s0 int
+ro.surface_flinger.max_virtual_display_dimension u:object_r:exported_default_prop:s0 int
+ro.surface_flinger.primary_display_orientation u:object_r:exported_default_prop:s0 string
+ro.surface_flinger.present_time_offset_from_vsync_ns u:object_r:exported_default_prop:s0 int
+ro.surface_flinger.running_without_sync_framework u:object_r:exported_default_prop:s0 bool
+ro.surface_flinger.start_graphics_allocator_service u:object_r:exported_default_prop:s0 bool
+ro.surface_flinger.use_color_management u:object_r:exported_default_prop:s0 bool
+ro.surface_flinger.use_context_priority u:object_r:exported_default_prop:s0 bool
+ro.surface_flinger.use_vr_flinger u:object_r:exported_default_prop:s0 bool
+ro.surface_flinger.vsync_event_phase_offset_ns u:object_r:exported_default_prop:s0 int
+ro.surface_flinger.vsync_sf_event_phase_offset_ns u:object_r:exported_default_prop:s0 int
+ro.surface_flinger.wcg_composition_dataspace u:object_r:exported_default_prop:s0 int
+ro.surface_flinger.wcg_composition_pixel_format u:object_r:exported_default_prop:s0 int

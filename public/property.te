@@ -3,9 +3,11 @@ type audio_prop, property_type, core_property_type;
 type boottime_prop, property_type;
 type bluetooth_a2dp_offload_prop, property_type;
 type bluetooth_prop, property_type;
+type bpf_progs_loaded_prop, property_type;
 type bootloader_boot_reason_prop, property_type;
 type config_prop, property_type, core_property_type;
 type cppreopt_prop, property_type, core_property_type;
+type cpu_variant_prop, property_type;
 type ctl_adbd_prop, property_type;
 type ctl_bootanim_prop, property_type;
 type ctl_bugreport_prop, property_type;
@@ -26,8 +28,14 @@ type dalvik_prop, property_type, core_property_type;
 type debuggerd_prop, property_type, core_property_type;
 type debug_prop, property_type, core_property_type;
 type default_prop, property_type, core_property_type;
+type device_config_activity_manager_native_boot_prop, property_type;
 type device_config_boot_count_prop, property_type;
 type device_config_reset_performed_prop, property_type;
+type device_config_input_native_boot_prop, property_type;
+type device_config_netd_native_prop, property_type;
+type device_config_runtime_native_boot_prop, property_type;
+type device_config_runtime_native_prop, property_type;
+type device_config_media_native_prop, property_type;
 type device_logging_prop, property_type;
 type dhcp_prop, property_type, core_property_type;
 type dumpstate_options_prop, property_type;
@@ -36,6 +44,8 @@ type exported_secure_prop, property_type;
 type ffs_prop, property_type, core_property_type;
 type fingerprint_prop, property_type, core_property_type;
 type firstboot_prop, property_type;
+type heapprofd_enabled_prop, property_type;
+type heapprofd_prop, property_type;
 type hwservicemanager_prop, property_type;
 type last_boot_reason_prop, property_type;
 type system_lmk_prop, property_type;
@@ -65,6 +75,7 @@ type system_boot_reason_prop, property_type;
 type system_prop, property_type, core_property_type;
 type system_radio_prop, property_type, core_property_type;
 type test_boot_reason_prop, property_type;
+type test_harness_prop, property_type;
 type time_prop, property_type;
 type traced_enabled_prop, property_type;
 type vold_prop, property_type, core_property_type;
@@ -338,6 +349,7 @@ compatible_property_only(`
     -bluetooth_prop
     -bootloader_boot_reason_prop
     -boottime_prop
+    -bpf_progs_loaded_prop
     -config_prop
     -cppreopt_prop
     -ctl_adbd_prop
@@ -391,8 +403,16 @@ compatible_property_only(`
     -ffs_prop
     -fingerprint_prop
     -firstboot_prop
+    -device_config_activity_manager_native_boot_prop
     -device_config_reset_performed_prop
     -device_config_boot_count_prop
+    -device_config_input_native_boot_prop
+    -device_config_netd_native_prop
+    -device_config_runtime_native_boot_prop
+    -device_config_runtime_native_prop
+    -device_config_media_native_prop
+    -heapprofd_enabled_prop
+    -heapprofd_prop
     -hwservicemanager_prop
     -last_boot_reason_prop
     -system_lmk_prop
@@ -421,6 +441,7 @@ compatible_property_only(`
     -system_prop
     -system_radio_prop
     -test_boot_reason_prop
+    -test_harness_prop
     -time_prop
     -traced_enabled_prop
     -vendor_default_prop

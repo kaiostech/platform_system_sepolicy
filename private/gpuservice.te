@@ -22,8 +22,14 @@ hwbinder_use(gpuservice)
 allow gpuservice graphics_device:dir search;
 allow gpuservice graphics_device:chr_file rw_file_perms;
 
+# Needed for dumpsys pipes.
+allow gpuservice shell:fifo_file write;
+
 # Use socket supplied by adbd, for cmd gpu vkjson etc.
 allow gpuservice adbd:unix_stream_socket { read write getattr };
+
+# Needed for interactive shell
+allow gpuservice devpts:chr_file { read write getattr };
 
 add_service(gpuservice, gpu_service)
 
