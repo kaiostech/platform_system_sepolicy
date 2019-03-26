@@ -79,6 +79,7 @@ sys.boot.reason.last    u:object_r:last_boot_reason_prop:s0
 pm.                     u:object_r:pm_prop:s0
 test.sys.boot.reason    u:object_r:test_boot_reason_prop:s0
 sys.lmk.                u:object_r:system_lmk_prop:s0
+sys.trace.              u:object_r:system_trace_prop:s0
 
 # Boolean property set by system server upon boot indicating
 # if device owner is provisioned.
@@ -180,3 +181,6 @@ apexd.                  u:object_r:apexd_prop:s0
 persist.apexd.          u:object_r:apexd_prop:s0
 
 bpf.progs_loaded        u:object_r:bpf_progs_loaded_prop:s0
+
+gsid.                   u:object_r:gsid_prop:s0
+ro.gsid.                u:object_r:gsid_prop:s0

@@ -44,6 +44,7 @@ type exported_secure_prop, property_type;
 type ffs_prop, property_type, core_property_type;
 type fingerprint_prop, property_type, core_property_type;
 type firstboot_prop, property_type;
+type gsid_prop, property_type;
 type heapprofd_enabled_prop, property_type;
 type heapprofd_prop, property_type;
 type hwservicemanager_prop, property_type;
@@ -74,10 +75,12 @@ type shell_prop, property_type, core_property_type;
 type system_boot_reason_prop, property_type;
 type system_prop, property_type, core_property_type;
 type system_radio_prop, property_type, core_property_type;
+type system_trace_prop, property_type;
 type test_boot_reason_prop, property_type;
 type test_harness_prop, property_type;
 type time_prop, property_type;
 type traced_enabled_prop, property_type;
+type use_memfd_prop, property_type;
 type vold_prop, property_type, core_property_type;
 type wifi_log_prop, property_type, log_property_type;
 type wifi_prop, property_type;
@@ -411,6 +414,7 @@ compatible_property_only(`
     -device_config_runtime_native_boot_prop
     -device_config_runtime_native_prop
     -device_config_media_native_prop
+    -gsid_prop
     -heapprofd_enabled_prop
     -heapprofd_prop
     -hwservicemanager_prop
@@ -440,6 +444,7 @@ compatible_property_only(`
     -system_boot_reason_prop
     -system_prop
     -system_radio_prop
+    -system_trace_prop
     -test_boot_reason_prop
     -test_harness_prop
     -time_prop

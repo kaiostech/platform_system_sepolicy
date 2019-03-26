@@ -103,6 +103,7 @@ genfscon cgroup2 / u:object_r:cgroup_bpf:s0
 genfscon sysfs / u:object_r:sysfs:s0
 genfscon sysfs /devices/system/cpu u:object_r:sysfs_devices_system_cpu:s0
 genfscon sysfs /class/android_usb                 u:object_r:sysfs_android_usb:s0
+genfscon sysfs /class/extcon                      u:object_r:sysfs_extcon:s0
 genfscon sysfs /class/leds                        u:object_r:sysfs_leds:s0
 genfscon sysfs /class/net                         u:object_r:sysfs_net:s0
 genfscon sysfs /class/rfkill/rfkill0/state        u:object_r:sysfs_bluetooth_writable:s0
@@ -123,6 +124,7 @@ genfscon sysfs /devices/virtual/misc/hw_random    u:object_r:sysfs_hwrandom:s0
 genfscon sysfs /devices/virtual/switch          u:object_r:sysfs_switch:s0
 genfscon sysfs /firmware/devicetree/base/firmware/android u:object_r:sysfs_dt_firmware_android:s0
 genfscon sysfs /fs/ext4/features                  u:object_r:sysfs_fs_ext4_features:s0
+genfscon sysfs /fs/f2fs                           u:object_r:sysfs_fs_f2fs:s0
 genfscon sysfs /power/autosleep u:object_r:sysfs_power:s0
 genfscon sysfs /power/state u:object_r:sysfs_power:s0
 genfscon sysfs /power/wakeup_count u:object_r:sysfs_power:s0
@@ -227,6 +229,7 @@ genfscon tracefs /events/kmem/ion_heap_shrink/                           u:objec
 genfscon tracefs /events/oom/oom_score_adj_update/                       u:object_r:debugfs_tracing:s0
 genfscon tracefs /events/task/task_rename/                               u:object_r:debugfs_tracing:s0
 genfscon tracefs /events/task/task_newtask/                              u:object_r:debugfs_tracing:s0
+genfscon tracefs /events/ftrace/print/                                   u:object_r:debugfs_tracing:s0
 
 genfscon debugfs /tracing/trace_clock                                            u:object_r:debugfs_tracing:s0
 genfscon debugfs /tracing/buffer_size_kb                                         u:object_r:debugfs_tracing:s0
@@ -266,6 +269,7 @@ genfscon debugfs /events/kmem/ion_heap_shrink/                                  
 genfscon debugfs /events/oom/oom_score_adj_update/                               u:object_r:debugfs_tracing:s0
 genfscon debugfs /events/task/task_rename/                                       u:object_r:debugfs_tracing:s0
 genfscon debugfs /events/task/task_newtask/                                      u:object_r:debugfs_tracing:s0
+genfscon debugfs /tracing/events/ftrace/print/                                   u:object_r:debugfs_tracing:s0
 
 genfscon debugfs /kcov								 u:object_r:debugfs_kcov:s0
 

@@ -64,6 +64,8 @@ unix_socket_connect(isolated_app, traced_producer, traced)
 # debuggable.
 can_profile_heap(isolated_app)
 
+allow isolated_app ashmem_device:chr_file { getattr read write ioctl };
+
 #####
 ##### Neverallow
 #####
@@ -90,10 +92,12 @@ neverallow isolated_app *:service_manager ~find;
 
 # b/17487348
 # Isolated apps can only access three services,
-# activity_service, display_service and webviewupdate_service.
+# activity_service, display_service, webviewupdate_service, and
+# ashmem_device_service.
 neverallow isolated_app {
     service_manager_type
     -activity_service
+    -ashmem_device_service
     -display_service
     -webviewupdate_service
 }:service_manager find;

@@ -53,6 +53,12 @@ net_domain(system_server)
 allowxperm system_server self:udp_socket ioctl priv_sock_ioctls;
 bluetooth_domain(system_server)
 
+# Allow setup of tcp keepalive offload. This gives system_server the permission to
+# call ioctl on app domains' tcp sockets. Additional ioctl commands still need to
+# be granted individually, except for a small set of safe values whitelisted in
+# public/domain.te.
+allow system_server appdomain:tcp_socket ioctl;
+
 # These are the capabilities assigned by the zygote to the
 # system server.
 allow system_server self:global_capability_class_set {
@@ -68,8 +74,6 @@ allow system_server self:global_capability_class_set {
     sys_time
     sys_tty_config
 };
-
-wakelock_use(system_server)
 
 # Trigger module auto-load.
 allow system_server kernel:system module_request;
@@ -185,6 +189,7 @@ binder_call(system_server, installd)
 binder_call(system_server, incidentd)
 binder_call(system_server, iorapd)
 binder_call(system_server, netd)
+binder_call(system_server, notify_traceur)
 binder_call(system_server, statsd)
 binder_call(system_server, storaged)
 binder_call(system_server, update_engine)
@@ -217,7 +222,6 @@ hal_client_domain(system_server, hal_omx)
 hal_client_domain(system_server, hal_power)
 hal_client_domain(system_server, hal_power_stats)
 hal_client_domain(system_server, hal_sensors)
-hal_client_domain(system_server, hal_system_suspend)
 hal_client_domain(system_server, hal_tetheroffload)
 hal_client_domain(system_server, hal_thermal)
 hal_client_domain(system_server, hal_tv_cec)
@@ -266,6 +270,7 @@ allow system_server {
   sdcardd
   statsd
   surfaceflinger
+  vold
 
   # This list comes from HAL_INTERFACES_OF_INTEREST in
   # frameworks/base/services/core/java/com/android/server/Watchdog.java.
@@ -301,6 +306,8 @@ allow system_server sysfs_type:dir search;
 
 r_dir_file(system_server, sysfs_android_usb)
 allow system_server sysfs_android_usb:file w_file_perms;
+
+allow system_server sysfs_extcon:dir r_dir_perms;
 
 r_dir_file(system_server, sysfs_ipv4)
 allow system_server sysfs_ipv4:file w_file_perms;
@@ -469,7 +476,7 @@ allow system_server wifi_data_file:file create_file_perms;
 allow system_server zoneinfo_data_file:dir create_dir_perms;
 allow system_server zoneinfo_data_file:file create_file_perms;
 
-# Manage /data/staging.
+# Manage /data/pkg_staging.
 allow system_server staging_data_file:dir create_dir_perms;
 allow system_server staging_data_file:file create_file_perms;
 
@@ -610,6 +617,9 @@ get_prop(system_server, device_config_reset_performed_prop)
 
 # Read/write the property that enables Test Harness Mode
 set_prop(system_server, test_harness_prop)
+
+# Read gsid.image_running.
+get_prop(system_server, gsid_prop)
 
 # Create a socket for connections from debuggerd.
 allow system_server system_ndebug_socket:sock_file create_file_perms;
@@ -985,6 +995,14 @@ allow system_server system_server_startup:unix_dgram_socket write;
 # Allow system server to communicate to apexd
 allow system_server apex_service:service_manager find;
 allow system_server apexd:binder call;
+
+# Allow system server to communicate to system-suspend's control interface
+allow system_server system_suspend_control_service:service_manager find;
+binder_call(system_server, system_suspend)
+binder_call(system_suspend, system_server)
+
+# Allow system server to communicate to system-suspend's wakelock interface
+wakelock_use(system_server)
 
 # Allow the system server to read files under /data/apex. The system_server
 # needs these privileges to compare file signatures while processing installs.

@@ -29,6 +29,12 @@ recovery_only(`
   # Read serial number of the device from system properties
   get_prop(fastbootd, serialno_prop)
 
+  # For dev/block/by-name dir
+  allow fastbootd block_device:dir r_dir_perms;
+
+  # Needed for DM_DEV_CREATE ioctl call
+  allow fastbootd self:capability sys_admin;
+
   # Set sys.usb.ffs.ready.
   set_prop(fastbootd, ffs_prop)
   set_prop(fastbootd, exported_ffs_prop)
@@ -47,6 +53,13 @@ recovery_only(`
     userdata_block_device
   }:blk_file { w_file_perms getattr ioctl };
 
+  # For disabling/wiping GSI.
+  allow fastbootd metadata_block_device:blk_file r_file_perms;
+  allow fastbootd {rootfs tmpfs}:dir mounton;
+  allow fastbootd metadata_file:dir search;
+  allow fastbootd gsi_metadata_file:dir r_dir_perms;
+  allow fastbootd gsi_metadata_file:file rw_file_perms;
+
   allowxperm fastbootd {
     system_block_device
     super_block_device
@@ -55,6 +68,7 @@ recovery_only(`
   allowxperm fastbootd {
     metadata_block_device
     userdata_block_device
+    dm_device
   }:blk_file ioctl { BLKSECDISCARD BLKDISCARD };
 
   allow fastbootd misc_block_device:blk_file rw_file_perms;
