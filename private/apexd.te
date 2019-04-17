@@ -2,13 +2,14 @@ typeattribute apexd coredomain;
 
 init_daemon_domain(apexd)
 
-# Read /system/etc/security/apex_debug_key
-allow apexd apex_key_file:dir { search getattr };
-allow apexd apex_key_file:file r_file_perms;
-
 # Allow creating, reading and writing of APEX files/dirs in the APEX data dir
 allow apexd apex_data_file:dir create_dir_perms;
 allow apexd apex_data_file:file create_file_perms;
+
+# Allow creating, reading and writing of APEX files/dirs in the APEX metadata dir
+allow apexd metadata_file:dir search;
+allow apexd apex_metadata_file:dir create_dir_perms;
+allow apexd apex_metadata_file:file create_file_perms;
 
 # allow apexd to create loop devices with /dev/loop-control
 allow apexd loop_control_device:chr_file rw_file_perms;
@@ -41,16 +42,11 @@ allow apexd apex_mnt_dir:dir mounton;
 # allow apexd to create symlinks in /apex
 allow apexd apex_mnt_dir:lnk_file create_file_perms;
 # allow apexd to unlink apex files in /data/apex/active
-# note that apexd won't be able to unlink files in /data/pkg_staging/session_XXXX,
+# note that apexd won't be able to unlink files in /data/app-staging/session_XXXX,
 # because it doesn't have write permission for staging_data_file object.
 allow apexd staging_data_file:file unlink;
 
-# allow apexd to relabel apk_tmp_file to apex_data_file.
-# TODO(b/112669193) remove this when APEXes are staged via file descriptor
-allow apexd apk_tmp_file:file relabelfrom;
-allow apexd apex_data_file:file relabelto;
-
-# allow apexd to read files from /data/pkg_staging and hardlink them to /data/apex.
+# allow apexd to read files from /data/app-staging and hardlink them to /data/apex.
 allow apexd staging_data_file:dir r_dir_perms;
 allow apexd staging_data_file:file { r_file_perms link };
 
@@ -76,6 +72,14 @@ dontaudit apexd self:global_capability_class_set { dac_override dac_read_search 
 # Allow apexd to log to the kernel.
 allow apexd kmsg_device:chr_file w_file_perms;
 
+# Allow apexd to reboot device. Required for rollbacks of apexes that are
+# not covered by rollback manager.
+set_prop(apexd, powerctl_prop)
+
+# Find the vold service, and call into vold to manage FS checkpoints
+allow apexd vold_service:service_manager find;
+binder_call(apexd, vold)
+
 # Apex pre- & post-install permission.
 
 # Allow self-execute for the fork mount helper.
@@ -89,9 +93,10 @@ allow apexd rootfs:dir mounton;
 # rule is required, thus restricted to execute and not execute_no_trans.
 allow apexd shell_exec:file { r_file_perms execute };
 
-# Allow apexd to reboot device. Required for rollbacks of apexes that are
-# not covered by rollback manager.
-set_prop(apexd, powerctl_prop)
+# Allow transition to ART APEX preinstall domain.
+domain_auto_trans(apexd, art_apex_preinstall_exec, art_apex_preinstall)
+# Allow transition to ART APEX postinstall domain.
+domain_auto_trans(apexd, art_apex_postinstall_exec, art_apex_postinstall)
 
 # Allow transition to test APEX preinstall domain.
 userdebug_or_eng(`
@@ -99,5 +104,7 @@ userdebug_or_eng(`
 ')
 
 neverallow { domain -apexd -init } apex_data_file:dir no_w_dir_perms;
+neverallow { domain -apexd -init } apex_metadata_file:dir no_w_dir_perms;
 neverallow { domain -apexd -init -kernel } apex_data_file:file no_w_file_perms;
+neverallow { domain -apexd -init -kernel } apex_metadata_file:file no_w_file_perms;
 neverallow { domain -apexd } apex_mnt_dir:lnk_file no_w_file_perms;

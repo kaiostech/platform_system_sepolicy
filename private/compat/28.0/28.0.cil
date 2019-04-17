@@ -1377,6 +1377,7 @@
 (typeattributeset priv_app_28_0 (priv_app))
 (typeattributeset proc_28_0
   ( proc
+    proc_fs_verity
     proc_keys
     proc_pressure_cpu
     proc_pressure_io
@@ -1541,8 +1542,10 @@
 (typeattributeset swap_block_device_28_0 (swap_block_device))
 (typeattributeset sysfs_28_0
   ( sysfs
+    sysfs_devices_block
     sysfs_extcon
-    sysfs_loop))
+    sysfs_loop
+    sysfs_transparent_hugepage))
 (typeattributeset sysfs_android_usb_28_0 (sysfs_android_usb))
 (typeattributeset sysfs_batteryinfo_28_0 (sysfs_batteryinfo))
 (typeattributeset sysfs_bluetooth_writable_28_0 (sysfs_bluetooth_writable))
@@ -1578,7 +1581,8 @@
 (typeattributeset system_boot_reason_prop_28_0 (system_boot_reason_prop))
 (typeattributeset system_data_file_28_0
   ( dropbox_data_file
-    system_data_file))
+    system_data_file
+    packages_list_file))
 (typeattributeset system_file_28_0
   ( system_file
     system_asan_options_file

@@ -2,6 +2,7 @@ type apexd_prop, property_type;
 type audio_prop, property_type, core_property_type;
 type boottime_prop, property_type;
 type bluetooth_a2dp_offload_prop, property_type;
+type bluetooth_audio_hal_prop, property_type;
 type bluetooth_prop, property_type;
 type bpf_progs_loaded_prop, property_type;
 type bootloader_boot_reason_prop, property_type;
@@ -15,6 +16,7 @@ type ctl_console_prop, property_type;
 type ctl_default_prop, property_type;
 type ctl_dumpstate_prop, property_type;
 type ctl_fuse_prop, property_type;
+type ctl_gsid_prop, property_type;
 type ctl_interface_restart_prop, property_type;
 type ctl_interface_start_prop, property_type;
 type ctl_interface_stop_prop, property_type;
@@ -56,11 +58,13 @@ type logpersistd_logging_prop, property_type;
 type log_prop, property_type, log_property_type;
 type log_tag_prop, property_type, log_property_type;
 type lowpan_prop, property_type;
+type lpdumpd_prop, property_type;
 type mmc_prop, property_type;
 type net_dns_prop, property_type;
 type net_radio_prop, property_type, core_property_type;
 type netd_stable_secret_prop, property_type;
 type nfc_prop, property_type, core_property_type;
+type nnapi_ext_deny_product_prop, property_type;
 type overlay_prop, property_type;
 type pan_result_prop, property_type, core_property_type;
 type persist_debug_prop, property_type, core_property_type;
@@ -80,6 +84,7 @@ type test_boot_reason_prop, property_type;
 type test_harness_prop, property_type;
 type time_prop, property_type;
 type traced_enabled_prop, property_type;
+type traced_lazy_prop, property_type;
 type use_memfd_prop, property_type;
 type vold_prop, property_type, core_property_type;
 type wifi_log_prop, property_type, log_property_type;
@@ -349,6 +354,7 @@ compatible_property_only(`
     -apexd_prop
     -audio_prop
     -bluetooth_a2dp_offload_prop
+    -bluetooth_audio_hal_prop
     -bluetooth_prop
     -bootloader_boot_reason_prop
     -boottime_prop
@@ -362,6 +368,7 @@ compatible_property_only(`
     -ctl_default_prop
     -ctl_dumpstate_prop
     -ctl_fuse_prop
+    -ctl_gsid_prop
     -ctl_interface_restart_prop
     -ctl_interface_start_prop
     -ctl_interface_stop_prop
@@ -425,6 +432,7 @@ compatible_property_only(`
     -logd_prop
     -logpersistd_logging_prop
     -lowpan_prop
+    -lpdumpd_prop
     -mmc_prop
     -net_dns_prop
     -net_radio_prop
@@ -449,6 +457,7 @@ compatible_property_only(`
     -test_harness_prop
     -time_prop
     -traced_enabled_prop
+    -traced_lazy_prop
     -vendor_default_prop
     -vendor_security_patch_level_prop
     -vold_prop

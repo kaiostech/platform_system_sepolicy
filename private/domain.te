@@ -19,6 +19,10 @@ userdebug_or_eng(`can_profile_heap_userdebug_or_eng({
   -keystore
   -llkd
   -logd
+  -logpersist
+  -recovery
+  -recovery_persist
+  -recovery_refresh
   -ueventd
   -vendor_init
   -vold
@@ -32,6 +36,7 @@ allow { domain -appdomain -rs } cgroup:file w_file_perms;
 allow domain cgroup_rc_file:dir search;
 allow domain cgroup_rc_file:file r_file_perms;
 allow domain task_profiles_file:file r_file_perms;
+allow domain vendor_task_profiles_file:file r_file_perms;
 
 # Allow all domains to read sys.use_memfd to determine
 # if memfd support can be used if device supports it
@@ -66,6 +71,15 @@ compatible_property_only(`
     get_prop({coredomain appdomain shell}, exported3_radio_prop)
     get_prop({coredomain appdomain shell}, exported3_system_prop)
     get_prop({domain -coredomain -appdomain}, vendor_default_prop)
+')
+
+# Allow access to fsverity keyring.
+allow domain kernel:key search;
+# Allow access to keys in the fsverity keyring that were installed at boot.
+allow domain fsverity_init:key search;
+# For testing purposes, allow access to keys installed with su.
+userdebug_or_eng(`
+  allow domain su:key search;
 ')
 
 # Limit ability to ptrace or read sensitive /proc/pid files of processes
@@ -215,6 +229,8 @@ neverallow {
   -cppreopts
   -dex2oat
   -otapreopt_slot
+  -art_apex_postinstall
+  -art_apex_boot_integrity
 } dalvikcache_data_file:file no_w_file_perms;
 
 neverallow {
@@ -226,6 +242,8 @@ neverallow {
   -dex2oat
   -zygote
   -otapreopt_slot
+  -art_apex_boot_integrity
+  -art_apex_postinstall
 } dalvikcache_data_file:dir no_w_dir_perms;
 
 # Minimize dac_override and dac_read_search.
@@ -261,7 +279,39 @@ neverallow ~dac_override_allowed self:global_capability_class_set dac_override;
 neverallow ~{
   dac_override_allowed
   traced_probes
+  userdebug_or_eng(`heapprofd')
 } self:global_capability_class_set dac_read_search;
+
+# Limit what domains can mount filesystems or change their mount flags.
+# sdcard_type / vfat is exempt as a larger set of domains need
+# this capability, including device-specific domains.
+neverallow {
+    domain
+    -apexd
+    recovery_only(`userdebug_or_eng(`-fastbootd')')
+    -init
+    -kernel
+    -otapreopt_chroot
+    -recovery
+    -update_engine
+    -vold
+    -zygote
+} { fs_type -sdcard_type }:filesystem { mount remount relabelfrom relabelto };
+
+# Limit raw I/O to these whitelisted domains. Do not apply to debug builds.
+neverallow {
+  domain
+  userdebug_or_eng(`-domain')
+  -kernel
+  -gsid
+  -init
+  -recovery
+  -ueventd
+  -healthd
+  -uncrypt
+  -tee
+  -hal_bootctl_server
+} self:global_capability_class_set sys_rawio;
 
 # Latest versions of linux kernel do a check for dac_read_search before
 # verifying dac_override capability. So adding a dont audit rule for

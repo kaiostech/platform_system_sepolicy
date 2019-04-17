@@ -24,6 +24,7 @@ type proc_dirty, fs_type, proc_type;
 type proc_diskstats, fs_type, proc_type;
 type proc_extra_free_kbytes, fs_type, proc_type;
 type proc_filesystems, fs_type, proc_type;
+type proc_fs_verity, fs_type, proc_type;
 type proc_hostname, fs_type, proc_type;
 type proc_hung_task, fs_type, proc_type;
 type proc_interrupts, fs_type, proc_type;
@@ -76,6 +77,7 @@ type sysfs_android_usb, fs_type, sysfs_type;
 type sysfs_uio, sysfs_type, fs_type;
 type sysfs_batteryinfo, fs_type, sysfs_type;
 type sysfs_bluetooth_writable, fs_type, sysfs_type, mlstrustedobject;
+type sysfs_devices_block, fs_type, sysfs_type;
 type sysfs_dm, fs_type, sysfs_type;
 type sysfs_dt_firmware_android, fs_type, sysfs_type;
 type sysfs_extcon, fs_type, sysfs_type;
@@ -91,6 +93,7 @@ type sysfs_net, fs_type, sysfs_type;
 type sysfs_power, fs_type, sysfs_type;
 type sysfs_rtc, fs_type, sysfs_type;
 type sysfs_switch, fs_type, sysfs_type;
+type sysfs_transparent_hugepage, fs_type, sysfs_type;
 type sysfs_usb, fs_type, sysfs_type;
 type sysfs_wakeup_reasons, fs_type, sysfs_type;
 type sysfs_fs_ext4_features, sysfs_type, fs_type;
@@ -151,8 +154,6 @@ type system_linker_exec, system_file_type, file_type;
 type system_linker_config_file, system_file_type, file_type;
 # Default type for linker config /system/etc/seccomp_policy/*.
 type system_seccomp_policy_file, system_file_type, file_type;
-# Default type for APEX keys in /system/etc/security/apex/*
-type apex_key_file, system_file_type, file_type;
 # Default type for cacerts in /system/etc/security/cacerts/*.
 type system_security_cacerts_file, system_file_type, file_type;
 # Default type for /system/bin/tcpdump.
@@ -161,8 +162,12 @@ type tcpdump_exec, system_file_type, exec_type, file_type;
 type system_zoneinfo_file, system_file_type, file_type;
 # Cgroups description file under /system/etc/cgroups.json
 type cgroup_desc_file, system_file_type, file_type;
+# Vendor cgroups description file under /vendor/etc/cgroups.json
+type vendor_cgroup_desc_file, vendor_file_type, file_type;
 # Task profiles file under /system/etc/task_profiles.json
 type task_profiles_file, system_file_type, file_type;
+# Vendor task profiles file under /vendor/etc/task_profiles.json
+type vendor_task_profiles_file, vendor_file_type, file_type;
 
 # Default type for directories search for
 # HAL implementations
@@ -197,6 +202,10 @@ type metadata_file, file_type;
 type vold_metadata_file, file_type;
 # GSI files within /metadata
 type gsi_metadata_file, file_type;
+# system_server shares Weaver slot information in /metadata
+type password_slot_metadata_file, file_type;
+# APEX files within /metadata
+type apex_metadata_file, file_type;
 
 # Type for /dev/cpu_variant:.*.
 type dev_cpu_variant, file_type;
@@ -210,6 +219,10 @@ type cgroup_rc_file, file_type;
 type coredump_file, file_type;
 # Default type for anything under /data.
 type system_data_file, file_type, data_file_type, core_data_file_type;
+# Type for /data/system/packages.list.
+# TODO(b/129332765): Narrow down permissions to this.
+# Find out users of system_data_file that should be granted only this.
+type packages_list_file, file_type, data_file_type, core_data_file_type;
 # Default type for anything under /data/vendor{_ce,_de}.
 type vendor_data_file, file_type, data_file_type;
 # Unencrypted data
@@ -269,7 +282,7 @@ type preloads_media_file, file_type, data_file_type, core_data_file_type;
 type dhcp_data_file, file_type, data_file_type, core_data_file_type;
 # /data/server_configurable_flags
 type server_configurable_flags_data_file, file_type, data_file_type, core_data_file_type;
-# /data/pkg_staging
+# /data/app-staging
 type staging_data_file, file_type, data_file_type, core_data_file_type;
 
 # Mount locations managed by vold

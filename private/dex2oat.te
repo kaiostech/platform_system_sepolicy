@@ -42,11 +42,10 @@ allow dex2oat { privapp_data_file app_data_file }:file { getattr read write lock
 # Allow dex2oat to use file descriptors from otapreopt.
 allow dex2oat postinstall_dexopt:fd use;
 
-allow dex2oat postinstall_file:dir { getattr search };
+# Allow dex2oat to read files under /postinstall (e.g. APKs under /system, /system/bin/linker).
+allow dex2oat postinstall_file:dir r_dir_perms;
 allow dex2oat postinstall_file:filesystem getattr;
 allow dex2oat postinstall_file:lnk_file { getattr read };
-
-# Allow dex2oat to read files under /postinstall (e.g. APKs under /system, /system/bin/linker).
 allow dex2oat postinstall_file:file read;
 # Allow dex2oat to use libraries under /postinstall/system (e.g. /system/lib/libc.so).
 # TODO(b/120266448): Remove when Bionic libraries are part of the Runtime APEX.
@@ -67,6 +66,16 @@ allow dex2oat ota_data_file:lnk_file { create read };
 # pass file descriptors for the preopted boot image to dex2oat. So dex2oat needs to be able to
 # create them itself (and make them world-readable).
 allow dex2oat ota_data_file:file { create w_file_perms setattr };
+
+###############
+# APEX Update #
+###############
+
+# /dev/zero is inherited.
+allow dex2oat apexd:fd use;
+
+# Allow dex2oat to use file descriptors from preinstall.
+allow dex2oat art_apex_preinstall:fd use;
 
 ##############
 # Neverallow #

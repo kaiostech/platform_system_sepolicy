@@ -10,8 +10,14 @@
 # On debug builds, this central daemon performs profiling for all target
 # processes (which talk directly to this daemon).
 type heapprofd_exec, exec_type, file_type, system_file_type;
+type heapprofd_tmpfs, file_type;
 
 init_daemon_domain(heapprofd)
+tmpfs_domain(heapprofd)
+
+# Allow apps in other MLS contexts (for multi-user) to access
+# shared memory buffers created by heapprofd.
+typeattribute heapprofd_tmpfs mlstrustedobject;
 
 set_prop(heapprofd, heapprofd_prop);
 
@@ -36,11 +42,22 @@ unix_socket_connect(heapprofd, traced_producer, traced)
 # When handling profiling for all processes, heapprofd needs to read
 # executables/libraries/etc to do stack unwinding.
 userdebug_or_eng(`
+  r_dir_file(heapprofd, nativetest_data_file)
   r_dir_file(heapprofd, system_file_type)
   r_dir_file(heapprofd, apk_data_file)
   r_dir_file(heapprofd, dalvikcache_data_file)
   r_dir_file(heapprofd, vendor_file_type)
+  # Some dex files are not world-readable.
+  # We are still constrained by the SELinux rules above.
+  allow heapprofd self:global_capability_class_set dac_read_search;
 ')
+
+# This is going to happen on user but is benign because central heapprofd
+# does not actually need these permission.
+# If the dac_read_search capability check is rejected, the kernel then tries
+# to perform a dac_override capability check, so we need to dontaudit that
+# as well.
+dontaudit heapprofd self:global_capability_class_set { dac_read_search dac_override };
 
 never_profile_heap(`{
   bpfloader

@@ -29,6 +29,9 @@ allow traced_probes self:global_capability_class_set { sys_nice };
 # Allow procfs access
 r_dir_file(traced_probes, domain)
 
+# Allow to read packages.list file.
+allow traced_probes packages_list_file:file r_file_perms;
+
 # Allow to log to kernel dmesg when starting / stopping ftrace.
 allow traced_probes kmsg_device:chr_file write;
 
@@ -41,7 +44,8 @@ allow traced_probes self:global_capability_class_set dac_read_search;
 allow traced_probes apk_data_file:dir { getattr open read search };
 allow traced_probes dalvikcache_data_file:dir { getattr open read search };
 userdebug_or_eng(`
-allow traced_probes system_data_file:dir { getattr open read search };
+# search and getattr are granted via domain and coredomain, respectively.
+allow traced_probes system_data_file:dir { open read };
 ')
 allow traced_probes system_app_data_file:dir { getattr open read search };
 allow traced_probes backup_data_file:dir { getattr open read search };
@@ -66,8 +70,9 @@ allow traced_probes {
   proc_stat
 }:file r_file_perms;
 
-# Allow access to the IHealth HAL service for tracing battery counters.
+# Allow access to the IHealth and IPowerStats HAL service for tracing battery counters.
 hal_client_domain(traced_probes, hal_health)
+hal_client_domain(traced_probes, hal_power_stats)
 
 # On debug builds allow to ingest system logs into the trace.
 userdebug_or_eng(`read_logd(traced_probes)')
@@ -107,7 +112,7 @@ neverallow traced_probes {
 neverallow traced_probes system_data_file:dir ~{ getattr userdebug_or_eng(`open read') search };
 neverallow traced_probes zoneinfo_data_file:dir ~r_dir_perms;
 neverallow traced_probes { data_file_type -zoneinfo_data_file }:lnk_file *;
-neverallow traced_probes { data_file_type -zoneinfo_data_file }:file *;
+neverallow traced_probes { data_file_type -zoneinfo_data_file -packages_list_file }:file *;
 
 # Only init is allowed to enter the traced_probes domain via exec()
 neverallow { domain -init } traced_probes:process transition;

@@ -7,7 +7,12 @@ type postinstall_dexopt, domain, coredomain;
 
 # Run dex2oat/patchoat in its own sandbox.
 # We have to manually transition, as we don't have an entrypoint.
+# - Case where dex2oat is in a non-flattened APEX, which has retained
+#   the correct type (`dex2oat_exec`).
 domain_auto_trans(postinstall_dexopt, dex2oat_exec, dex2oat)
+# - Case where dex2oat is in a flattened APEX, which has been tagged
+#   with the `postinstall_file` type by update_engine.
+domain_auto_trans(postinstall_dexopt, postinstall_file, dex2oat)
 
 allow postinstall_dexopt self:global_capability_class_set { chown dac_override dac_read_search fowner fsetid setgid setuid };
 
@@ -27,6 +32,8 @@ allow postinstall_dexopt postinstall_apex_mnt_dir:dir { getattr search };
 r_dir_file(postinstall_dexopt, apk_data_file)
 # Read vendor app data (APKs) as input to dex2oat.
 r_dir_file(postinstall_dexopt, vendor_app_file)
+# Read vendor overlay files (APKs) as input to dex2oat.
+r_dir_file(postinstall_dexopt, vendor_overlay_file)
 # Access to app oat directory.
 r_dir_file(postinstall_dexopt, dalvikcache_data_file)
 
@@ -62,3 +69,7 @@ allow postinstall_dexopt postinstall:process sigchld;
 # Allow otapreopt to use file descriptors from otapreopt_chroot.
 # TODO: Probably we can actually close file descriptors...
 allow postinstall_dexopt otapreopt_chroot:fd use;
+
+# Allow postinstall_dexopt to access the runtime feature flag properties.
+get_prop(postinstall_dexopt, device_config_runtime_native_prop)
+get_prop(postinstall_dexopt, device_config_runtime_native_boot_prop)

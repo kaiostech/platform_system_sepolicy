@@ -205,6 +205,11 @@ r_dir_file(domain, sysfs_devices_system_cpu)
 
 r_dir_file(domain, sysfs_usb);
 
+# If kernel CONFIG_TRANSPARENT_HUGEPAGE is enabled, libjemalloc5 (statically
+# included by libc) reads /sys/kernel/mm/transparent_hugepage/enabled.
+allow domain sysfs_transparent_hugepage:dir search;
+allow domain sysfs_transparent_hugepage:file r_file_perms;
+
 # files under /data.
 not_full_treble(`
   allow domain system_data_file:dir getattr;
@@ -344,20 +349,6 @@ neverallow {
   -vold
 } self:global_capability_class_set mknod;
 
-# Limit raw I/O to these whitelisted domains. Do not apply to debug builds.
-neverallow {
-  domain
-  userdebug_or_eng(`-domain')
-  -kernel
-  -init
-  -recovery
-  -ueventd
-  -healthd
-  -uncrypt
-  -tee
-  -hal_bootctl
-} self:global_capability_class_set sys_rawio;
-
 # No process can map low memory (< CONFIG_LSM_MMAP_MIN_ADDR).
 neverallow * self:memprotect mmap_zero;
 
@@ -443,22 +434,6 @@ neverallow * *:{ blk_file chr_file } rename;
 # Don't allow raw read/write/open access to generic devices.
 # Rather force a relabel to a more specific type.
 neverallow domain device:chr_file { open read write };
-
-# Limit what domains can mount filesystems or change their mount flags.
-# sdcard_type / vfat is exempt as a larger set of domains need
-# this capability, including device-specific domains.
-neverallow {
-    domain
-    -apexd
-    recovery_only(`userdebug_or_eng(`-fastbootd')')
-    -init
-    -kernel
-    -otapreopt_chroot
-    -recovery
-    -update_engine
-    -vold
-    -zygote
-} { fs_type -sdcard_type }:filesystem { mount remount relabelfrom relabelto };
 
 # Files from cache should never be executed
 neverallow domain { cache_file cache_backup_file cache_private_backup_file cache_recovery_file }:file execute;
@@ -569,8 +544,9 @@ neverallow {
   -adbd
   -dumpstate
   -fastbootd
-  -hal_drm_server
+  -hal_camera_server
   -hal_cas_server
+  -hal_drm_server
   -init
   -mediadrmserver
   -recovery
@@ -614,14 +590,6 @@ neverallow {
   -update_engine
 } system_block_device:blk_file { write append };
 
-# No domains other than install_recovery, recovery or fastbootd can write to recovery.
-neverallow {
-  domain
-  -fastbootd
-  -install_recovery
-  -recovery
-} recovery_block_device:blk_file { write append };
-
 # No domains other than a select few can access the misc_block_device. This
 # block device is reserved for OTA use.
 # Do not assert this rule on userdebug/eng builds, due to some devices using
@@ -661,6 +629,11 @@ full_treble_only(`
     -binder_in_vendor_violators # TODO(b/35870313): Remove once all violations are gone
   } binder_device:chr_file rw_file_perms;
 ')
+
+# libcutils can probe for /dev/binder permissions with access(). Ignore
+# generated denials. See b/129073672 for details.
+dontaudit domain binder_device:chr_file audit_access;
+
 full_treble_only(`
   neverallow {
     domain
@@ -764,7 +737,7 @@ full_treble_only(`
     -mdnsd # netdomain needs this
     userdebug_or_eng(`-su') # communications with su are permitted only on userdebug or eng builds
     -init
-    -tombstoned # TODO(b/36604251): Remove tombstoned from this list once mediacodec (OMX HAL) no longer declares Binder services
+    -tombstoned # linker to tombstoned
     userdebug_or_eng('-heapprofd`)
   });
 ')
@@ -1037,6 +1010,7 @@ full_treble_only(`
     -vendor_keylayout_file
     -vendor_overlay_file
     -vendor_public_lib_file
+    -vendor_task_profiles_file
     -vndk_sp_file
   }:file *;
 ')
@@ -1144,7 +1118,7 @@ neverallow * self:process { execstack execheap };
 
 # Do not allow the introduction of new execmod rules. Text relocations
 # and modification of executable pages are unsafe.
-neverallow { domain -untrusted_app_25 } file_type:file execmod;
+neverallow { domain -untrusted_app_25 -untrusted_app_27 } file_type:file execmod;
 
 neverallow { domain -init } proc:{ file dir } mounton;
 

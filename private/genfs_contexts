@@ -37,6 +37,7 @@ genfscon proc /sys/fs/pipe-max-size u:object_r:proc_pipe_conf:s0
 genfscon proc /sys/fs/protected_hardlinks u:object_r:proc_security:s0
 genfscon proc /sys/fs/protected_symlinks u:object_r:proc_security:s0
 genfscon proc /sys/fs/suid_dumpable u:object_r:proc_security:s0
+genfscon proc /sys/fs/verity/require_signatures u:object_r:proc_fs_verity:s0
 genfscon proc /sys/kernel/core_pattern u:object_r:usermodehelper:s0
 genfscon proc /sys/kernel/core_pipe_limit u:object_r:usermodehelper:s0
 genfscon proc /sys/kernel/domainname u:object_r:proc_hostname:s0
@@ -114,6 +115,7 @@ genfscon sysfs /class/rtc                         u:object_r:sysfs_rtc:s0
 genfscon sysfs /class/switch                      u:object_r:sysfs_switch:s0
 genfscon sysfs /devices/platform/nfc-power/nfc_power u:object_r:sysfs_nfc_power_writable:s0
 genfscon sysfs /devices/virtual/android_usb     u:object_r:sysfs_android_usb:s0
+genfscon sysfs /devices/virtual/block/            u:object_r:sysfs_devices_block:s0
 genfscon sysfs /devices/virtual/block/dm-       u:object_r:sysfs_dm:s0
 genfscon sysfs /devices/virtual/block/loop       u:object_r:sysfs_loop:s0
 genfscon sysfs /devices/virtual/block/zram0     u:object_r:sysfs_zram:s0
@@ -132,6 +134,7 @@ genfscon sysfs /power/wake_lock u:object_r:sysfs_wake_lock:s0
 genfscon sysfs /power/wake_unlock u:object_r:sysfs_wake_lock:s0
 genfscon sysfs /kernel/memory_state_time u:object_r:sysfs_power:s0
 genfscon sysfs /kernel/ipv4 u:object_r:sysfs_ipv4:s0
+genfscon sysfs /kernel/mm/transparent_hugepage u:object_r:sysfs_transparent_hugepage:s0
 genfscon sysfs /kernel/notes u:object_r:sysfs_kernel_notes:s0
 genfscon sysfs /kernel/uevent_helper u:object_r:sysfs_usermodehelper:s0
 genfscon sysfs /kernel/wakeup_reasons u:object_r:sysfs_wakeup_reasons:s0
@@ -221,6 +224,7 @@ genfscon tracefs /events/binder/binder_transaction_alloc_buf/            u:objec
 genfscon tracefs /events/lowmemorykiller/                                u:object_r:debugfs_tracing:s0
 genfscon tracefs /events/sync/                                           u:object_r:debugfs_tracing:s0
 genfscon tracefs /events/fence/                                          u:object_r:debugfs_tracing:s0
+genfscon tracefs /events/dma_fence/                                      u:object_r:debugfs_tracing:s0
 genfscon tracefs /events/filemap/mm_filemap_add_to_page_cache/           u:object_r:debugfs_tracing:s0
 genfscon tracefs /events/filemap/mm_filemap_delete_from_page_cache/      u:object_r:debugfs_tracing:s0
 genfscon tracefs /events/kmem/rss_stat/                                  u:object_r:debugfs_tracing:s0
@@ -241,7 +245,7 @@ genfscon debugfs /tracing/events/sched/sched_switch/                            
 genfscon debugfs /tracing/events/sched/sched_wakeup/                             u:object_r:debugfs_tracing:s0
 genfscon debugfs /tracing/events/sched/sched_blocked_reason/                     u:object_r:debugfs_tracing:s0
 genfscon debugfs /tracing/events/sched/sched_cpu_hotplug/                        u:object_r:debugfs_tracing:s0
-genfscon debugfs /events/sched/sched_process_exit/                               u:object_r:debugfs_tracing:s0
+genfscon debugfs /tracing/events/sched/sched_process_exit/                               u:object_r:debugfs_tracing:s0
 genfscon debugfs /tracing/events/cgroup/                                         u:object_r:debugfs_tracing:s0
 genfscon debugfs /tracing/events/power/cpu_frequency/                            u:object_r:debugfs_tracing:s0
 genfscon debugfs /tracing/events/power/cpu_idle/                                 u:object_r:debugfs_tracing:s0
@@ -257,18 +261,19 @@ genfscon debugfs /tracing/events/binder/binder_transaction_received/            
 genfscon debugfs /tracing/events/binder/binder_lock/                             u:object_r:debugfs_tracing:s0
 genfscon debugfs /tracing/events/binder/binder_locked/                           u:object_r:debugfs_tracing:s0
 genfscon debugfs /tracing/events/binder/binder_unlock/                           u:object_r:debugfs_tracing:s0
-genfscon debugfs /events/binder/binder_transaction_alloc_buf/                    u:object_r:debugfs_tracing:s0
+genfscon debugfs /tracing/events/binder/binder_transaction_alloc_buf/                    u:object_r:debugfs_tracing:s0
 genfscon debugfs /tracing/events/lowmemorykiller/                                u:object_r:debugfs_tracing:s0
 genfscon debugfs /tracing/events/sync/                                           u:object_r:debugfs_tracing:s0
 genfscon debugfs /tracing/events/fence/                                          u:object_r:debugfs_tracing:s0
+genfscon debugfs /tracing/events/dma_fence/                                      u:object_r:debugfs_tracing:s0
 genfscon debugfs /tracing/events/filemap/mm_filemap_add_to_page_cache/           u:object_r:debugfs_tracing:s0
 genfscon debugfs /tracing/events/filemap/mm_filemap_delete_from_page_cache/      u:object_r:debugfs_tracing:s0
-genfscon debugfs /events/kmem/rss_stat/                                          u:object_r:debugfs_tracing:s0
-genfscon debugfs /events/kmem/ion_heap_grow/                                     u:object_r:debugfs_tracing:s0
-genfscon debugfs /events/kmem/ion_heap_shrink/                                   u:object_r:debugfs_tracing:s0
-genfscon debugfs /events/oom/oom_score_adj_update/                               u:object_r:debugfs_tracing:s0
-genfscon debugfs /events/task/task_rename/                                       u:object_r:debugfs_tracing:s0
-genfscon debugfs /events/task/task_newtask/                                      u:object_r:debugfs_tracing:s0
+genfscon debugfs /tracing/events/kmem/rss_stat/                                          u:object_r:debugfs_tracing:s0
+genfscon debugfs /tracing/events/kmem/ion_heap_grow/                                     u:object_r:debugfs_tracing:s0
+genfscon debugfs /tracing/events/kmem/ion_heap_shrink/                                   u:object_r:debugfs_tracing:s0
+genfscon debugfs /tracing/events/oom/oom_score_adj_update/                               u:object_r:debugfs_tracing:s0
+genfscon debugfs /tracing/events/task/task_rename/                                       u:object_r:debugfs_tracing:s0
+genfscon debugfs /tracing/events/task/task_newtask/                                      u:object_r:debugfs_tracing:s0
 genfscon debugfs /tracing/events/ftrace/print/                                   u:object_r:debugfs_tracing:s0
 
 genfscon debugfs /kcov								 u:object_r:debugfs_kcov:s0

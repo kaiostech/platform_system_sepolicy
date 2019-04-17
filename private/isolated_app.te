@@ -64,7 +64,7 @@ unix_socket_connect(isolated_app, traced_producer, traced)
 # debuggable.
 can_profile_heap(isolated_app)
 
-allow isolated_app ashmem_device:chr_file { getattr read write ioctl };
+allow isolated_app ashmem_device:chr_file { getattr read ioctl lock map append write };
 
 #####
 ##### Neverallow
@@ -127,6 +127,7 @@ neverallow isolated_app webview_zygote:sock_file write;
 neverallow isolated_app {
   sysfs_type
   -sysfs_devices_system_cpu
+  -sysfs_transparent_hugepage
   -sysfs_usb # TODO: check with audio team if needed for isolated_app (b/28417852)
 }:file no_rw_file_perms;
 
