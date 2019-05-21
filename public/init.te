@@ -49,8 +49,8 @@ allow init {
 # setrlimit
 allow init self:global_capability_class_set sys_resource;
 
-# Remove /dev/.booting, created before initial policy load or restorecon /dev.
-allow init tmpfs:file unlink;
+# Remove /dev/.booting and load /debug_ramdisk/* files
+allow init tmpfs:file { getattr unlink };
 
 # Access pty created for fsck.
 allow init devpts:chr_file { read write open };
@@ -557,6 +557,10 @@ allow init apexd:binder call;
 
 # Allow init to touch PSI monitors
 allow init proc_pressure_mem:file { rw_file_perms setattr };
+
+# init is using bootstrap bionic
+allow init system_bootstrap_lib_file:dir r_dir_perms;
+allow init system_bootstrap_lib_file:file { execute read open getattr map };
 
 ###
 ### neverallow rules

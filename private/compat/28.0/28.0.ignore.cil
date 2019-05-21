@@ -46,6 +46,7 @@
     device_config_service
     dnsresolver_service
     dynamic_system_service
+    dynamic_system_prop
     face_service
     face_vendor_data_file
     fastbootd
@@ -121,6 +122,7 @@
     su_tmpfs
     super_block_device
     sysfs_fs_f2fs
+    system_bootstrap_lib_file
     system_event_log_tags_file
     system_lmk_prop
     system_suspend_hwservice
