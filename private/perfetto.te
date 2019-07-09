@@ -37,11 +37,18 @@ allow perfetto { statsd shell su }:fifo_file { getattr read write };
 allow perfetto adbd:fd use;
 allow perfetto adbd:unix_stream_socket { read write };
 
-# allow adbd to reap perfetto
+# Allow adbd to reap perfetto
 allow perfetto adbd:process { sigchld };
 
 # Allow to access /dev/pts when launched in an adb shell.
 allow perfetto devpts:chr_file rw_file_perms;
+
+# Allow perfetto to ask incidentd to start a report.
+# TODO(b/134706389): remove when no longer used.
+userdebug_or_eng(`
+  allow perfetto incident_service:service_manager find;
+  binder_call(perfetto, incidentd)
+');
 
 ###
 ### Neverallow rules
@@ -67,8 +74,14 @@ neverallow perfetto {
   -vendor_data_file
   -zoneinfo_data_file
   -perfetto_traces_data_file
+  with_native_coverage(`-method_trace_data_file')
 }:dir *;
 neverallow perfetto { system_data_file -perfetto_traces_data_file }:dir ~{ getattr search };
 neverallow perfetto zoneinfo_data_file:dir ~r_dir_perms;
 neverallow perfetto { data_file_type -zoneinfo_data_file -perfetto_traces_data_file }:lnk_file *;
-neverallow perfetto { data_file_type -zoneinfo_data_file -perfetto_traces_data_file }:file ~write;
+neverallow perfetto {
+  data_file_type
+  -zoneinfo_data_file
+  -perfetto_traces_data_file
+  with_native_coverage(`-method_trace_data_file')
+}:file ~write;
