@@ -93,6 +93,9 @@ neverallow {
   -storaged
   -system_server
   userdebug_or_eng(`-perfprofd')
+  -b2g
+  -b2gkillerd
+  -gonkservices
 } self:global_capability_class_set sys_ptrace;
 
 # Limit ability to generate hardware unique device ID attestations to priv_apps
@@ -133,6 +136,7 @@ neverallow {
   -runas
   -system_server
   -viewcompiler
+  -b2g
 } { privapp_data_file app_data_file }:dir *;
 
 # Only apps should be modifying app data. installd is exempted for
@@ -142,6 +146,7 @@ neverallow {
   -appdomain
   -installd
   -rs # spawned by appdomain, so carryover the exception above
+  -b2g
 } { privapp_data_file app_data_file }:dir ~r_dir_perms;
 
 neverallow {
@@ -202,6 +207,8 @@ neverallow {
     -zygote
     userdebug_or_eng(`-mediaextractor')
     userdebug_or_eng(`-mediaswcodec')
+    -api-daemon
+    -child-daemon
 } {
     file_type
     -system_file_type
@@ -244,6 +251,7 @@ neverallow {
   -otapreopt_slot
   -art_apex_boot_integrity
   -art_apex_postinstall
+  -b2g
 } dalvikcache_data_file:dir no_w_dir_perms;
 
 # Minimize dac_override and dac_read_search.
@@ -271,6 +279,13 @@ define(`dac_override_allowed', `{
   vold
   vold_prepare_subdirs
   zygote
+  b2g
+  api-daemon
+  child-daemon
+  fakeappops
+  gonksched
+  b2gkillerd
+  gonkservices
 }')
 neverallow ~dac_override_allowed self:global_capability_class_set dac_override;
 # Since the kernel checks dac_read_search before dac_override, domains that

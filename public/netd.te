@@ -144,6 +144,7 @@ neverallow {
     -network_stack
     -netd
     -netutils_wrapper
+    -b2g
 } netd_service:service_manager find;
 
 # only system_server, dumpstate and network stack app may find dnsresolver service
@@ -154,6 +155,7 @@ neverallow {
     -network_stack
     -netd
     -netutils_wrapper
+    -b2g
 } dnsresolver_service:service_manager find;
 
 # apps may not interact with netd over binder.

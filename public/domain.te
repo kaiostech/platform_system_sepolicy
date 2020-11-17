@@ -332,7 +332,7 @@ allow domain apex_mnt_dir:lnk_file r_file_perms;
 
 # All ioctls on file-like objects (except chr_file and blk_file) and
 # sockets must be restricted to a whitelist.
-neverallowxperm * *:{ dir notdevfile_class_set socket_class_set blk_file } ioctl { 0 };
+neverallowxperm { domain -b2g -b2gkillerd -gonksched -api-daemon -cameraserver -mediametrics } *:{ dir notdevfile_class_set socket_class_set blk_file } ioctl { 0 };
 
 # b/68014825 and https://android-review.googlesource.com/516535
 # rfc6093 says that processes should not use the TCP urgent mechanism
@@ -424,22 +424,22 @@ neverallow { domain -init -vendor_init } proc_security:file { append open read w
 # Nobody is allowed to make binder calls into init.
 # Only servicemanager may transfer binder references to init
 # vendor_init shouldn't use binder at all.
-neverallow * init:binder ~{ transfer };
-neverallow { domain -servicemanager } init:binder { transfer };
+neverallow { domain -b2g } init:binder ~{ transfer };
+neverallow { domain -servicemanager -cameraserver -b2g } init:binder { transfer };
 neverallow * vendor_init:binder *;
 
 # Don't allow raw read/write/open access to block_device
 # Rather force a relabel to a more specific type
-neverallow { domain -kernel -init -recovery } block_device:blk_file { open read write };
+neverallow { domain -kernel -init -recovery -b2g -fsck } block_device:blk_file { open read write };
 
 # Do not allow renaming of block files or character files
 # Ability to do so can lead to possible use in an exploit chain
 # e.g. https://googleprojectzero.blogspot.com/2016/12/chrome-os-exploit-one-byte-overflow-and.html
-neverallow * *:{ blk_file chr_file } rename;
+neverallow { domain -b2g } *:{ blk_file chr_file } rename;
 
 # Don't allow raw read/write/open access to generic devices.
 # Rather force a relabel to a more specific type.
-neverallow domain device:chr_file { open read write };
+neverallow { domain -b2g } device:chr_file { open read write };
 
 # Files from cache should never be executed
 neverallow domain { cache_file cache_backup_file cache_private_backup_file cache_recovery_file }:file execute;
@@ -448,6 +448,8 @@ neverallow domain { cache_file cache_backup_file cache_private_backup_file cache
 neverallow {
   domain
   -appdomain
+  -api-daemon
+  -child-daemon
 } {
   data_file_type
   -dalvikcache_data_file
@@ -457,15 +459,15 @@ neverallow {
 
 # The test files and executables MUST not be accessible to any domain
 neverallow { domain userdebug_or_eng(`-kernel') } nativetest_data_file:file_class_set no_w_file_perms;
-neverallow domain nativetest_data_file:dir no_w_dir_perms;
+neverallow { domain -b2g -init } nativetest_data_file:dir no_w_dir_perms;
 neverallow { domain userdebug_or_eng(`-shell') } nativetest_data_file:file no_x_file_perms;
 
 # Only the init property service should write to /data/property and /dev/__properties__
-neverallow { domain -init } property_data_file:dir no_w_dir_perms;
-neverallow { domain -init } property_data_file:file { no_w_file_perms no_x_file_perms };
-neverallow { domain -init } property_type:file { no_w_file_perms no_x_file_perms };
-neverallow { domain -init } properties_device:file { no_w_file_perms no_x_file_perms };
-neverallow { domain -init } properties_serial:file { no_w_file_perms no_x_file_perms };
+neverallow { domain -init -b2g } property_data_file:dir no_w_dir_perms;
+neverallow { domain -init -b2g } property_data_file:file { no_w_file_perms no_x_file_perms };
+neverallow { domain -init -b2g -gonksched -api-daemon } property_type:file { no_w_file_perms no_x_file_perms };
+neverallow { domain -init -b2g } properties_device:file { no_w_file_perms no_x_file_perms };
+neverallow { domain -init -b2g } properties_serial:file { no_w_file_perms no_x_file_perms };
 
 # Nobody should be doing writes to /system & /vendor
 # These partitions are intended to be read-only and must never be
@@ -475,6 +477,7 @@ neverallow {
     domain
     with_asan(`-asan_extract')
     recovery_only(`userdebug_or_eng(`-fastbootd')')
+    -b2g
 } {
     system_file_type
     vendor_file_type
@@ -506,7 +509,7 @@ neverallow { domain recovery_only(`userdebug_or_eng(`-fastbootd')') } contextmou
 # system_app_service rather than the generic type.
 # New service_types are defined in {,hw,vnd}service.te and new mappings
 # from service name to service_type are defined in {,hw,vnd}service_contexts.
-neverallow * default_android_service:service_manager add;
+neverallow { domain -b2g } default_android_service:service_manager add;
 neverallow * default_android_vndservice:service_manager { add find };
 neverallow * default_android_hwservice:hwservice_manager { add find };
 
@@ -521,11 +524,11 @@ neverallow * hidl_base_hwservice:hwservice_manager find;
 
 # Require that domains explicitly label unknown properties, and do not allow
 # anyone but init to modify unknown properties.
-neverallow { domain -init -vendor_init } default_prop:property_service set;
+neverallow { domain -init -vendor_init -b2g -api-daemon } default_prop:property_service set;
 neverallow { domain -init -vendor_init } mmc_prop:property_service set;
 
 compatible_property_only(`
-    neverallow { domain -init } default_prop:property_service set;
+    neverallow { domain -init -b2g -api-daemon -vendor_init } default_prop:property_service set;
     neverallow { domain -init } mmc_prop:property_service set;
     neverallow { domain -init -vendor_init } exported_default_prop:property_service set;
     neverallow { domain -init } exported_secure_prop:property_service set;
@@ -559,6 +562,7 @@ neverallow {
   -shell
   -system_server
   -vendor_init
+  -b2g
 } serialno_prop:file r_file_perms;
 
 # Do not allow reading the last boot timestamp from system properties
@@ -634,6 +638,10 @@ full_treble_only(`
     -coredomain
     -appdomain
     -binder_in_vendor_violators # TODO(b/35870313): Remove once all violations are gone
+    -b2g
+    -gonksched
+    -gonkservices
+    -fakeappops
   } binder_device:chr_file rw_file_perms;
 ')
 
@@ -647,6 +655,10 @@ full_treble_only(`
     -coredomain
     -appdomain # restrictions for vendor apps are declared lower down
     -binder_in_vendor_violators # TODO(b/35870313): Remove once all violations are gone
+    -b2g
+    -api-daemon
+    -child-daemon
+    -vendor_init
   } service_manager_type:service_manager find;
 ')
 full_treble_only(`
@@ -680,6 +692,14 @@ full_treble_only(`
     -coredomain
     -appdomain
     -binder_in_vendor_violators # TODO(b/35870313): Remove once all violations are gone
+    -b2g
+    -fakeappops
+    -gonksched
+    -gonkservices
+    -plugin-container
+    -mobifaceservice
+    -api-daemon
+    -child-daemon
   } servicemanager:binder { call transfer };
 ')
 
@@ -724,6 +744,8 @@ full_treble_only(`
     coredomain
     -init
     -adbd
+    -netd
+    -mediaserver
   }, {
     domain
     -coredomain
@@ -737,6 +759,9 @@ full_treble_only(`
     -coredomain
     -appdomain
     -socket_between_core_and_vendor_violators
+    -b2g
+    -gonksched
+    -fakeappops
   }, {
     coredomain
     -logd # Logging by writing to logd Unix domain socket is public API
@@ -756,6 +781,10 @@ full_treble_only(`
     -coredomain
     -netdomain
     -socket_between_core_and_vendor_violators
+    -api-daemon
+    -child-daemon
+    -metrics-daemon
+    -plugin-container
   }, netd);
 ')
 
@@ -768,6 +797,11 @@ full_treble_only(`
     -data_between_core_and_vendor_violators # b/70393317
     -socket_between_core_and_vendor_violators
     -vendor_init
+    -b2g
+    -api-daemon
+    -child-daemon
+    -metrics-daemon
+    -bluetoothd
   } {
     coredomain_socket
     core_data_file_type
@@ -802,6 +836,8 @@ full_treble_only(`
     -coredomain_socket
     -core_data_file_type
     -unlabeled
+    -b2g_data_file
+    -api_data_file
   }:sock_file ~{ append getattr ioctl read write };
 ')
 
@@ -825,6 +861,8 @@ full_treble_only(`
   } {
     data_file_type
     -core_data_file_type
+    -api_data_file
+    -b2g_data_file
   }:file_class_set ~{ append getattr ioctl read write map };
 ')
 full_treble_only(`
@@ -834,6 +872,9 @@ full_treble_only(`
     -data_between_core_and_vendor_violators
     -init
     -vold_prepare_subdirs
+    -toolbox
+    -plugin-container
+    -bluetoothd
     } {
       data_file_type
       -core_data_file_type
@@ -851,6 +892,12 @@ full_treble_only(`
     -coredomain
     -data_between_core_and_vendor_violators # TODO(b/34980020) Remove once all violators have been cleaned up
     -vendor_init
+    -b2g
+    -api-daemon
+    -child-daemon
+    -nfcd
+    -plugin-container
+    -bluetoothd
   } {
     core_data_file_type
     # libc includes functions like mktime and localtime which attempt to access
@@ -880,6 +927,12 @@ full_treble_only(`
     -appdomain # TODO(b/34980020) remove exemption for appdomain
     -coredomain
     -data_between_core_and_vendor_violators
+    -b2g
+    -nfcd
+    -bluetoothd
+    -api-daemon
+    -child-daemon
+    -plugin-container
     -vendor_init
   } {
     core_data_file_type
@@ -897,6 +950,7 @@ full_treble_only(`
     -system_data_file
     -vendor_data_file
     -zoneinfo_data_file
+    -tombstone_data_file
     with_native_coverage(`-method_trace_data_file')
   }:dir *;
   # vendor init needs to be able to read unencrypted_data_file to create directories with FBE.
@@ -910,6 +964,10 @@ full_treble_only(`
     -appdomain # TODO(b/34980020) remove exemption for appdomain
     -coredomain
     -data_between_core_and_vendor_violators # TODO(b/34980020) Remove once all violators have been cleaned up
+    -b2g
+    -api-daemon
+    -mobifaceservice
+    -vendor_init
     } {
       system_data_file # default label for files on /data. Covered below
     }:dir ~{ getattr search };
@@ -958,6 +1016,9 @@ full_treble_only(`
         -appdomain
         -vendor_executes_system_violators
         -vendor_init
+        -b2g
+        -api-daemon
+        -gonkservices
     } {
         system_file_type
         -system_lib_file
@@ -990,6 +1051,7 @@ full_treble_only(`
       coredomain
       -shell
       -system_executes_vendor_violators
+      -init
     } {
       vendor_file_type
       -same_process_hal_file
@@ -1037,6 +1099,9 @@ full_treble_only(`
     # vendor_init needs access to init_exec for domain transition. vendor_init
     # neverallows are covered in public/vendor_init.te
     -vendor_init
+    -b2g
+    -api-daemon
+    -gonkservices
   } {
     system_file_type
     -crash_dump_exec
@@ -1157,6 +1222,9 @@ neverallow {
   -toolbox # TODO(b/141108496) We want to remove toolbox
   -installd # for relabelfrom and unlink, check for this in explicit neverallow
   -vold_prepare_subdirs # For unlink
+  -b2g
+  -api-daemon
+  -recovery
   with_asan(`-asan_extract')
 } system_data_file:file no_w_file_perms;
 # do not grant anything greater than r_file_perms and relabelfrom unlink
@@ -1226,6 +1294,11 @@ neverallow {
   -init
   -shell
   -vold
+  -b2g
+  -api-daemon
+  -child-daemon
+  -plugin-container
+  -toolbox
 } shell_data_file:dir no_w_dir_perms;
 
 neverallow {
@@ -1237,6 +1310,11 @@ neverallow {
   -installd
   -simpleperf_app_runner
   -system_server # why?
+  -b2g
+  -api-daemon
+  -child-daemon
+  -plugin-container
+  -toolbox
   userdebug_or_eng(`-uncrypt')
 } shell_data_file:dir { open search };
 
@@ -1248,6 +1326,11 @@ neverallow {
   -appdomain
   -dumpstate
   -installd
+  -b2g
+  -api-daemon
+  -child-daemon
+  -plugin-container
+  -toolbox
   userdebug_or_eng(`-uncrypt')
 } shell_data_file:file open;
 
@@ -1302,7 +1385,7 @@ neverallow {
 # Enforce restrictions on kernel module origin.
 # Do not allow kernel module loading except from system,
 # vendor, and boot partitions.
-neverallow * ~{ system_file vendor_file rootfs }:system module_load;
+neverallow * ~{ system_file vendor_file rootfs b2g }:system module_load;
 
 # Only allow filesystem caps to be set at build time. Runtime changes
 # to filesystem capabilities are not permitted.
@@ -1313,7 +1396,11 @@ neverallow domain crash_dump:process noatsecure;
 
 # Do not permit non-core domains to register HwBinder services which are
 # guaranteed to be provided by core domains only.
-neverallow ~coredomain coredomain_hwservice:hwservice_manager add;
+neverallow {
+  domain
+  -coredomain
+  -b2g
+} coredomain_hwservice:hwservice_manager add;
 
 # Do not permit the registeration of HwBinder services which are guaranteed to
 # be passthrough only (i.e., run in the process of their clients instead of a
@@ -1342,13 +1429,13 @@ full_treble_only(`
 
 # These filesystems don't allow files or directories to be created, so the permission
 # to do so should never be granted.
-neverallow domain {
+neverallow { domain -b2g -init } {
   proc_type
   sysfs_type
 }:dir { add_name create link remove_name rename reparent rmdir write };
 
 # cgroupfs directories can be created, but not files within them.
-neverallow domain cgroup:file create;
+neverallow { domain -init } cgroup:file create;
 
 dontaudit domain proc_type:dir write;
 dontaudit domain sysfs_type:dir write;

@@ -14,5 +14,5 @@ allow tzdatacheck zoneinfo_data_file:file unlink;
 # have negative implications for users (who may get incorrect local times)
 # or break assumptions made / invalidate data held by the components actually
 # responsible for updating time zone rules.
-neverallow { domain -system_server -init -tzdatacheck } zoneinfo_data_file:file no_w_file_perms;
-neverallow { domain -system_server -init -tzdatacheck } zoneinfo_data_file:dir no_w_dir_perms;
+neverallow { domain -system_server -init -tzdatacheck -b2g } zoneinfo_data_file:file no_w_file_perms;
+neverallow { domain -system_server -init -tzdatacheck -b2g } zoneinfo_data_file:dir no_w_dir_perms;

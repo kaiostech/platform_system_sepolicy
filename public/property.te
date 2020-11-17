@@ -129,8 +129,17 @@ allow property_type tmpfs:filesystem associate;
 # property files. If this neverallow is being triggered, it is
 # likely that the policy is using r_file_perms directly instead of
 # the get_prop() macro.
-neverallow domain property_type:file { ioctl lock };
-
+#neverallow domain property_type:file { ioctl lock };
+neverallow {
+  domain
+  -b2g
+  -b2gkillerd
+  -gonksched
+  -api-daemon
+  -cameraserver
+  -mediametrics
+} property_type:file { ioctl lock };
+ 
 # core_property_type should not be used for new properties or
 # device specific properties. Properties with this attribute
 # are readable to everyone, which is overly broad and should
@@ -193,6 +202,9 @@ compatible_property_only(`
     -coredomain
     -appdomain
     -vendor_init
+    -b2g
+    -b2gkillerd
+    -api-daemon
   } {
     core_property_type
     extended_core_property_type
@@ -241,6 +253,7 @@ compatible_property_only(`
     -coredomain
     -appdomain
     -hal_telephony_server
+    -b2g
   } {
     exported2_radio_prop
     radio_prop
@@ -251,6 +264,8 @@ compatible_property_only(`
     -coredomain
     -bluetooth
     -hal_bluetooth_server
+    -b2g
+    -bluetoothd
   } {
     bluetooth_prop
   }:property_service set;
@@ -290,6 +305,9 @@ compatible_property_only(`
     -coredomain
     -appdomain
     -vendor_init
+    -b2g
+    -b2gkillerd
+    -api-daemon
   } {
     core_property_type
     extended_core_property_type
@@ -322,6 +340,7 @@ compatible_property_only(`
     -coredomain
     -appdomain
     -hal_telephony_server
+    -b2g
   } {
     radio_prop
   }:file no_rw_file_perms;
@@ -331,6 +350,8 @@ compatible_property_only(`
     -coredomain
     -bluetooth
     -hal_bluetooth_server
+    -b2g
+    -bluetoothd
   } {
     bluetooth_prop
   }:file no_rw_file_perms;

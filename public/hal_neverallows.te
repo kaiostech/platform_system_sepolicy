@@ -7,6 +7,7 @@ neverallow {
   -hal_wifi_hostapd_server
   -hal_wifi_supplicant_server
   -hal_telephony_server
+  -b2g
 } self:global_capability_class_set { net_admin net_raw };
 
 # Unless a HAL's job is to communicate over the network, or control network
@@ -23,6 +24,7 @@ neverallow {
   -hal_wifi_hostapd_server
   -hal_wifi_supplicant_server
   -hal_telephony_server
+  -b2g
 } domain:{ tcp_socket udp_socket rawip_socket } *;
 
 ###
@@ -50,9 +52,10 @@ neverallow {
   halserverdomain
   -hal_dumpstate_server
   -hal_telephony_server
+  -b2g
 } { file_type fs_type }:file execute_no_trans;
 # Do not allow a process other than init to transition into a HAL domain.
-neverallow { domain -init } halserverdomain:process transition;
+neverallow { domain -init -b2g } halserverdomain:process transition;
 # Only allow transitioning to a domain by running its executable. Do not
 # allow transitioning into a HAL domain by use of seclabel in an
 # init.*.rc script.
