@@ -252,6 +252,7 @@ neverallow {
     domain
     -vold
     -vold_prepare_subdirs
+    -b2g
 } vold_data_file:dir ~{ open create read getattr setattr search relabelfrom relabelto ioctl };
 
 neverallow {
@@ -259,6 +260,7 @@ neverallow {
     -init
     -vold
     -vold_prepare_subdirs
+    -b2g
 } vold_data_file:dir *;
 
 neverallow {
@@ -298,6 +300,7 @@ neverallow {
     -vold
     -update_verifier
     -apexd
+    -b2g
 } vold_service:service_manager find;
 
 neverallow vold {
@@ -312,6 +315,7 @@ neverallow vold {
   -iorapd_service
   -servicemanager
   -system_server
+  -b2g
   userdebug_or_eng(`-su')
 }:binder call;
 
