@@ -96,6 +96,7 @@ neverallow {
   -b2g
   -b2gkillerd
   -gonkservices
+  -api-daemon
 } self:global_capability_class_set sys_ptrace;
 
 # Limit ability to generate hardware unique device ID attestations to priv_apps

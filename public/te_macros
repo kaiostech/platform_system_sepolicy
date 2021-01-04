@@ -613,7 +613,7 @@ define(`use_drmservice', `
 # others from adding it.
 define(`add_service', `
   allow $1 $2:service_manager { add find };
-  neverallow { domain -$1 -b2g } $2:service_manager add;
+  neverallow { domain -$1 } $2:service_manager add;
 ')
 
 ###########################################
