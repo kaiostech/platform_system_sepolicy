@@ -283,6 +283,7 @@ allow system_server {
   hal_graphics_composer_server
   hal_health_server
   hal_omx_server
+  hal_power_stats_server
   hal_sensors_server
   hal_vr_server
 }:process { signal };
@@ -699,7 +700,9 @@ allow system_server pstorefs:file r_file_perms;
 allow system_server sysfs_zram:dir search;
 allow system_server sysfs_zram:file rw_file_perms;
 
-add_service(system_server, system_server_service);
+allow system_server system_server_service:service_manager { add find };
+neverallow { domain -system_server -b2g -fakeappops -gonksched -gonkservices } system_server_service:service_manager add;
+
 allow system_server audioserver_service:service_manager find;
 allow system_server batteryproperties_service:service_manager find;
 allow system_server cameraserver_service:service_manager find;
