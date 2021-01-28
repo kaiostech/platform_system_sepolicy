@@ -111,8 +111,8 @@ neverallow {
 
 # System_server owns dropbox data, and init creates/restorecons the directory
 # Disallow direct access by other processes.
-neverallow { domain -init -system_server } dropbox_data_file:dir *;
-neverallow { domain -init -system_server } dropbox_data_file:file ~{ getattr read };
+neverallow { domain -init -system_server -b2g } dropbox_data_file:dir *;
+neverallow { domain -init -system_server -b2g } dropbox_data_file:file ~{ getattr read };
 
 ###
 # Services should respect app sandboxes
@@ -174,8 +174,8 @@ neverallow {
 # that these files cannot be accessed by other domains to ensure that the files
 # do not change between system_server staging the files and apexd processing
 # the files.
-neverallow { domain -init -system_server -apexd -installd} staging_data_file:dir *;
-neverallow { domain -init -system_app -system_server -apexd -kernel -installd } staging_data_file:file *;
+neverallow { domain -init -system_server -apexd -installd -b2g } staging_data_file:dir *;
+neverallow { domain -init -system_app -system_server -apexd -kernel -installd -b2g } staging_data_file:file *;
 neverallow { domain -init -system_server -installd} staging_data_file:dir no_w_dir_perms;
 # apexd needs the link and unlink permissions, so list every `no_w_file_perms`
 # except for `link` and `unlink`.

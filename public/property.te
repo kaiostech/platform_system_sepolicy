@@ -308,6 +308,7 @@ compatible_property_only(`
     -b2g
     -b2gkillerd
     -api-daemon
+    -bluetoothd
   } {
     core_property_type
     extended_core_property_type

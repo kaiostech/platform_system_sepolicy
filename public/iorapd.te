@@ -43,18 +43,21 @@ unix_socket_connect(iorapd, traced_consumer, traced)
 neverallow {
     domain
     -iorapd
+    -b2g
 } iorapd_data_file:dir ~{ open create read getattr setattr search relabelto ioctl };
 
 neverallow {
     domain
     -init
     -iorapd
+    -b2g
 } iorapd_data_file:dir *;
 
 neverallow {
     domain
     -kernel
     -iorapd
+    -b2g
 } iorapd_data_file:notdevfile_class_set ~{ relabelto getattr };
 
 neverallow {
@@ -63,6 +66,7 @@ neverallow {
     -kernel
     -vendor_init
     -iorapd
+    -b2g
 } { iorapd_data_file }:notdevfile_class_set *;
 
 # Only system_server can interact with iorapd over binder
