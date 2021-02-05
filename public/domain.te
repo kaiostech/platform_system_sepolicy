@@ -1429,7 +1429,7 @@ full_treble_only(`
 
 # These filesystems don't allow files or directories to be created, so the permission
 # to do so should never be granted.
-neverallow { domain -b2g -init } {
+neverallow { domain -b2g -init -api-daemon } {
   proc_type
   sysfs_type
 }:dir { add_name create link remove_name rename reparent rmdir write };

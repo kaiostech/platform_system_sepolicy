@@ -113,21 +113,25 @@ neverallow {
     -gsid
     -fastbootd
     -vold
+    -b2g
 } { gsi_data_file gsi_metadata_file }:notdevfile_class_set *;
 
 neverallow {
     domain
     -gsid
     -init
+    -b2g
 } gsi_data_file:dir ~{ open create read getattr setattr search relabelto ioctl };
 
 neverallow {
     domain
     -init
     -gsid
+    -b2g
 } gsi_data_file:dir *;
 
 neverallow {
     domain
     -gsid
+    -b2g
 } gsi_data_file:notdevfile_class_set ~{ relabelto getattr };
