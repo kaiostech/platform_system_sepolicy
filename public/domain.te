@@ -783,7 +783,6 @@ full_treble_only(`
     -socket_between_core_and_vendor_violators
     -api-daemon
     -child-daemon
-    -metrics-daemon
     -plugin-container
   }, netd);
 ')
@@ -800,7 +799,6 @@ full_treble_only(`
     -b2g
     -api-daemon
     -child-daemon
-    -metrics-daemon
     -bluetoothd
   } {
     coredomain_socket
