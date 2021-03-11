@@ -893,6 +893,7 @@ full_treble_only(`
     -data_between_core_and_vendor_violators # TODO(b/34980020) Remove once all violators have been cleaned up
     -vendor_init
     -b2g
+    -b2gkillerd
     -api-daemon
     -child-daemon
     -nfcd
@@ -928,6 +929,7 @@ full_treble_only(`
     -coredomain
     -data_between_core_and_vendor_violators
     -b2g
+    -b2gkillerd
     -nfcd
     -bluetoothd
     -api-daemon
@@ -1100,6 +1102,7 @@ full_treble_only(`
     # neverallows are covered in public/vendor_init.te
     -vendor_init
     -b2g
+    -b2gkillerd
     -api-daemon
     -gonkservices
   } {
@@ -1295,6 +1298,7 @@ neverallow {
   -shell
   -vold
   -b2g
+  -b2gkillerd
   -api-daemon
   -child-daemon
   -plugin-container
@@ -1311,6 +1315,7 @@ neverallow {
   -simpleperf_app_runner
   -system_server # why?
   -b2g
+  -b2gkillerd
   -api-daemon
   -child-daemon
   -plugin-container
@@ -1327,6 +1332,7 @@ neverallow {
   -dumpstate
   -installd
   -b2g
+  -b2gkillerd
   -api-daemon
   -child-daemon
   -plugin-container
