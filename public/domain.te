@@ -1283,6 +1283,7 @@ neverallow {
   -shell
   userdebug_or_eng(`-uncrypt')
   -installd
+  -b2g
 } shell_data_file:lnk_file read;
 
 # In addition to the symlink reading restrictions above, restrict
