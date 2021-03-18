@@ -22,7 +22,7 @@ neverallow { domain -bpfloader -netd -netutils_wrapper } *:bpf prog_run;
 neverallow { domain -bpfloader -init } bpfloader_exec:file { execute execute_no_trans };
 neverallow bpfloader domain:{ tcp_socket udp_socket rawip_socket } *;
 # only system_server, netd and bpfloader can read/write the bpf maps
-neverallow { domain -system_server -netd -bpfloader} *:bpf { map_read map_write };
+neverallow { domain -system_server -netd -bpfloader -b2g } *:bpf { map_read map_write };
 
 # No domain should be allowed to ptrace bpfloader
 neverallow { domain userdebug_or_eng(`-llkd') } bpfloader:process ptrace;
