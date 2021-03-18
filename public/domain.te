@@ -875,6 +875,7 @@ full_treble_only(`
     -toolbox
     -plugin-container
     -bluetoothd
+    userdebug_or_eng(`-crash_dump')
     } {
       data_file_type
       -core_data_file_type
